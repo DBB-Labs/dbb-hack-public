@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DBB Labs — Consola de Pentest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#080b10; --panel:#0f151d; --panel2:#131b25; --line:#1d2836;
+    --tx:#e6edf3; --muted:#7f8ea0;
+    --cy:#22d3ee; --mg:#e879f9; --gr:#34d399; --am:#fbbf24; --rd:#f87171; --bl:#60a5fa;
+    --glow:0 0 24px rgba(34,211,238,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--tx);font-family:'Space Grotesk',system-ui,sans-serif}
+  body{padding:18px;max-width:1400px;margin:0 auto;background-image:radial-gradient(1200px 600px at 80% -10%,rgba(34,211,238,.08),transparent),radial-gradient(900px 500px at -10% 110%,rgba(232,121,249,.07),transparent)}
+  a{color:var(--cy)}
+  .row{display:flex;gap:16px;flex-wrap:wrap}
+  .panel{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:16px;padding:16px}
+  /* Header */
+  header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:44px;height:44px;border-radius:12px;background:conic-gradient(from 210deg,var(--cy),var(--mg),var(--cy));display:grid;place-items:center;font-weight:700;color:#04111a;box-shadow:var(--glow);animation:spin 8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .brand h1{font-size:20px;margin:0;letter-spacing:.5px}
+  .brand small{color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase}
+  .target{text-align:right}
+  .target .t{font-family:'JetBrains Mono',monospace;font-size:15px;color:var(--cy)}
+  .target .s{color:var(--muted);font-size:12px}
+  .pill{display:inline-flex;align-items:center;gap:7px;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid var(--line);background:#0c1219}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--gr);box-shadow:0 0 10px var(--gr);animation:pulse 1.4s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+  /* KPIs */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px}
+  .kpi{position:relative;overflow:hidden}
+  .kpi .n{font-size:42px;font-weight:700;line-height:1;font-family:'JetBrains Mono',monospace}
+  .kpi .l{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:1.5px;margin-top:8px}
+  .kpi .bar{position:absolute;left:0;bottom:0;height:3px;width:100%}
+  .k-cy .n{color:var(--cy)} .k-cy .bar{background:var(--cy)}
+  .k-gr .n{color:var(--gr)} .k-gr .bar{background:var(--gr)}
+  .k-am .n{color:var(--am)} .k-am .bar{background:var(--am)}
+  .k-bl .n{color:var(--bl)} .k-bl .bar{background:var(--bl)}
+  /* layout */
+  .grid{display:grid;grid-template-columns:1fr 340px;gap:16px}
+  @media(max-width:960px){.grid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin:0 0 14px}
+  /* attack matrix */
+  .atk{display:flex;flex-direction:column;gap:10px}
+  .card{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:#0c1219;transition:.3s}
+  .card:hover{border-color:#2b3a4d;transform:translateX(2px)}
+  .badge{min-width:44px;height:44px;border-radius:10px;display:grid;place-items:center;font-weight:700;font-family:'JetBrains Mono',monospace;font-size:14px}
+  .st-defendido .badge{background:rgba(52,211,153,.14);color:var(--gr);border:1px solid rgba(52,211,153,.3)}
+  .st-hallazgo .badge{background:rgba(251,191,36,.14);color:var(--am);border:1px solid rgba(251,191,36,.3)}
+  .st-vulnerable .badge{background:rgba(248,113,113,.14);color:var(--rd);border:1px solid rgba(248,113,113,.3)}
+  .st-corriendo .badge{background:rgba(34,211,238,.14);color:var(--cy);border:1px solid rgba(34,211,238,.3);animation:pulse 1s infinite}
+  .card .body{flex:1;min-width:0}
+  .card .name{font-weight:600;font-size:15px}
+  .card .det{color:var(--muted);font-size:12.5px;margin-top:3px;line-height:1.4}
+  .tags{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}
+  .tag{font-family:'JetBrains Mono',monospace;font-size:10px;padding:2px 7px;border-radius:6px;background:#0a1017;border:1px solid var(--line);color:var(--muted)}
+  .status-txt{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;white-space:nowrap}
+  .st-defendido .status-txt{color:var(--gr)} .st-hallazgo .status-txt{color:var(--am)}
+  .st-vulnerable .status-txt{color:var(--rd)} .st-corriendo .status-txt{color:var(--cy)}
+  /* gauge */
+  .gauge-wrap{display:flex;flex-direction:column;align-items:center;margin-bottom:16px}
+  .gauge{position:relative;width:200px;height:120px}
+  .gauge .val{position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:40px;font-weight:700;font-family:'JetBrains Mono',monospace}
+  .gauge .cap{text-align:center;color:var(--muted);font-size:12px;margin-top:4px;text-transform:uppercase;letter-spacing:1.5px}
+  /* feed */
+  .feed{font-family:'JetBrains Mono',monospace;font-size:12.5px;height:230px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;scroll-behavior:smooth}
+  .ev{display:flex;gap:10px;padding:5px 8px;border-radius:7px;border-left:2px solid var(--line);background:#0a1017;animation:slidein .4s ease}
+  @keyframes slidein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .ev .h{color:var(--muted);white-space:nowrap}
+  .ev.ataque{border-left-color:var(--cy)} .ev.ataque .x{color:var(--cy)}
+  .ev.defendido{border-left-color:var(--gr)} .ev.defendido .x{color:var(--gr)}
+  .ev.hallazgo{border-left-color:var(--am)} .ev.hallazgo .x{color:var(--am)}
+  .ev.vulnerable{border-left-color:var(--rd)} .ev.vulnerable .x{color:var(--rd)}
+  .ev.info .x{color:var(--muted)}
+  footer{color:var(--muted);font-size:11px;text-align:center;margin-top:18px;font-family:'JetBrains Mono',monospace}
+  .legend{display:flex;gap:14px;justify-content:center;margin-top:10px;font-size:11px;color:var(--muted)}
+  .legend span{display:flex;align-items:center;gap:5px}
+  .sq{width:9px;height:9px;border-radius:2px;display:inline-block}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">DB</div>
+    <div>
+      <h1>DBB&nbsp;Labs <span style="color:var(--muted);font-weight:400">· Consola de Pentest</span></h1>
+      <small id="modo">cargando…</small>
+    </div>
+  </div>
+  <div class="target">
+    <div class="t" id="objetivo">—</div>
+    <div class="s" id="stack">—</div>
+    <div style="margin-top:6px"><span class="pill"><span class="dot" id="livedot"></span><span id="estadoLbl">EN VIVO</span></span></div>
+  </div>
+</header>
+
+<div class="kpis">
+  <div class="panel kpi k-cy"><div class="n" id="k-vec">0</div><div class="l">Vectores probados</div><div class="bar"></div></div>
+  <div class="panel kpi k-gr"><div class="n" id="k-def">0</div><div class="l">Defendidos</div><div class="bar"></div></div>
+  <div class="panel kpi k-am"><div class="n" id="k-hal">0</div><div class="l">Hallazgos</div><div class="bar"></div></div>
+  <div class="panel kpi k-bl"><div class="n" id="k-cob">0<span style="font-size:22px">%</span></div><div class="l">Cobertura</div><div class="bar"></div></div>
+</div>
+
+<div class="grid">
+  <div class="panel">
+    <h2>Matriz de ataque · en tiempo real</h2>
+    <div class="atk" id="atk"></div>
+  </div>
+  <div>
+    <div class="panel" style="margin-bottom:16px">
+      <h2>Integridad de defensa</h2>
+      <div class="gauge-wrap">
+        <div class="gauge">
+          <svg width="200" height="120" viewBox="0 0 200 120">
+            <path d="M20 110 A80 80 0 0 1 180 110" fill="none" stroke="#1d2836" stroke-width="16" stroke-linecap="round"/>
+            <path id="gaugeArc" d="M20 110 A80 80 0 0 1 180 110" fill="none" stroke="url(#gg)" stroke-width="16" stroke-linecap="round" stroke-dasharray="251" stroke-dashoffset="251" style="transition:stroke-dashoffset 1.2s ease"/>
+            <defs><linearGradient id="gg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#f87171"/><stop offset=".5" stop-color="#fbbf24"/><stop offset="1" stop-color="#34d399"/></linearGradient></defs>
+          </svg>
+          <div class="val" id="gaugeVal">0</div>
+        </div>
+        <div class="cap">Score de resistencia</div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Severidad de hallazgos</h2>
+      <canvas id="donut" height="180"></canvas>
+      <div class="legend">
+        <span><i class="sq" style="background:var(--rd)"></i>Crítica</span>
+        <span><i class="sq" style="background:#fb923c"></i>Alta</span>
+        <span><i class="sq" style="background:var(--am)"></i>Media</span>
+        <span><i class="sq" style="background:var(--bl)"></i>Baja</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+  <h2>Feed en vivo</h2>
+  <div class="feed" id="feed"></div>
+</div>
+
+<footer>DBB Labs · motor DBB-HACK · lee <code>estado.json</code> cada segundo · producción nunca se toca</footer>
+
+<script>
+const $=id=>document.getElementById(id);
+let donut, lastCount=0, kAnim={};
+function countTo(el,to,suf=''){const from=kAnim[el.id]||0;kAnim[el.id]=to;const t0=performance.now(),d=700;
+  (function step(t){const p=Math.min(1,(t-t0)/d);const v=Math.round(from+(to-from)*(1-Math.pow(1-p,3)));el.firstChild&&(el.childNodes[0].nodeValue=v);if(p<1)requestAnimationFrame(step);})(performance.now());}
+function mkDonut(s){const ctx=$('donut');const data=[s.critica,s.alta,s.media,s.baja];
+  if(donut){donut.data.datasets[0].data=data;donut.update();return;}
+  donut=new Chart(ctx,{type:'doughnut',data:{labels:['Crítica','Alta','Media','Baja'],datasets:[{data,backgroundColor:['#f87171','#fb923c','#fbbf24','#60a5fa'],borderColor:'#0f151d',borderWidth:3}]},
+    options:{cutout:'68%',plugins:{legend:{display:false}},animation:{animateRotate:true}}});}
+const iconos={defendido:'🛡️',hallazgo:'⚠️',vulnerable:'🔴',corriendo:'⚡'};
+const stTxt={defendido:'Defendido',hallazgo:'Hallazgo',vulnerable:'Vulnerable',corriendo:'Corriendo'};
+function render(d){
+  $('modo').textContent=d.modo||'';$('objetivo').textContent=d.objetivo||'—';$('stack').textContent=d.stack||'';
+  $('estadoLbl').textContent=(d.estado==='completado')?'COMPLETADO':'EN VIVO';
+  if(d.estado==='completado')$('livedot').style.background='var(--bl)',$('livedot').style.boxShadow='0 0 10px var(--bl)',$('livedot').style.animation='none';
+  countTo($('k-vec'),d.kpis.vectores);countTo($('k-def'),d.kpis.defendidos);countTo($('k-hal'),d.kpis.hallazgos);countTo($('k-cob'),d.kpis.cobertura);
+  // gauge
+  const g=Math.max(0,Math.min(100,d.integridad||0));$('gaugeArc').style.strokeDashoffset=251-(251*g/100);
+  $('gaugeVal').textContent=g;$('gaugeVal').style.color=g>=80?'var(--gr)':g>=50?'var(--am)':'var(--rd)';
+  mkDonut(d.severidades);
+  // matrix
+  $('atk').innerHTML=(d.ataques||[]).map(a=>`
+    <div class="card st-${a.estado}">
+      <div class="badge">${iconos[a.estado]||'•'}</div>
+      <div class="body">
+        <div class="name">${a.id} · ${a.nombre}</div>
+        <div class="det">${a.detalle||''}</div>
+        <div class="tags"><span class="tag">${a.categoria}</span><span class="tag">OWASP ${a.owasp}</span><span class="tag">ISO ${a.iso}</span></div>
+      </div>
+      <div class="status-txt">${stTxt[a.estado]||a.estado}</div>
+    </div>`).join('');
+  // feed
+  const ev=d.eventos||[];const feed=$('feed');
+  feed.innerHTML=ev.map(e=>`<div class="ev ${e.tipo}"><span class="h">${e.hora}</span><span class="x">${e.texto}</span></div>`).join('');
+  if(ev.length!==lastCount){feed.scrollTop=feed.scrollHeight;lastCount=ev.length;}
+}
+async function tick(){try{const r=await fetch('estado.json?_='+Date.now());render(await r.json());}catch(e){}}
+tick();setInterval(tick,1000);
+</script>
+</body>
+</html>
