@@ -9,14 +9,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root{--bg:#060a0f;--panel:#0d141c;--panel2:#101a24;--line:#17222f;--tx:#e6edf3;--muted:#728294;
-    --cy:#22d3ee;--mg:#e879f9;--gr:#34d399;--am:#fbbf24;--rd:#f87171;--bl:#60a5fa;--glow:0 0 22px rgba(34,211,238,.35);}
+    --cy:#f26522;--mg:#ff9a5a;--gr:#34d399;--am:#fbbf24;--rd:#f87171;--bl:#60a5fa;--glow:0 0 22px rgba(242,101,34,.35);}
   *{box-sizing:border-box}
   html,body{margin:0;background:var(--bg);color:var(--tx);font-family:'Space Grotesk',system-ui,sans-serif}
   body{padding:16px;max-width:1500px;margin:0 auto;
-    background-image:radial-gradient(1200px 600px at 85% -10%,rgba(34,211,238,.07),transparent),radial-gradient(900px 500px at -10% 110%,rgba(232,121,249,.06),transparent);}
+    background-image:radial-gradient(1200px 600px at 85% -10%,rgba(242,101,34,.07),transparent),radial-gradient(900px 500px at -10% 110%,rgba(255,154,90,.06),transparent);}
   .scan{position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.015) 0 1px,transparent 1px 3px);z-index:99;mix-blend-mode:overlay}
   .panel{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:14px;padding:14px;position:relative;overflow:hidden}
-  .panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(34,211,238,.5),transparent)}
+  .panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(242,101,34,.5),transparent)}
   h2{font-size:11px;text-transform:uppercase;letter-spacing:2.5px;color:var(--muted);margin:0 0 10px;display:flex;align-items:center;gap:8px}
   h2 .live{width:7px;height:7px;border-radius:50%;background:var(--rd);box-shadow:0 0 8px var(--rd);animation:blink 2.4s ease-in-out infinite}
   body.done h2 .live,body.done .dot{background:var(--gr)!important;box-shadow:0 0 8px var(--gr)!important;animation:none!important}
@@ -24,8 +24,8 @@
   @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
   header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px;flex-wrap:wrap}
   .brand{display:flex;align-items:center;gap:12px}
-  .logo{width:46px;height:46px;border-radius:12px;background:conic-gradient(from 210deg,var(--cy),var(--mg),var(--cy));display:grid;place-items:center;font-weight:700;color:#04111a;box-shadow:var(--glow);animation:spin 9s linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
+  .logo{width:46px;height:46px;border-radius:12px;overflow:hidden;box-shadow:var(--glow);border:1px solid var(--line)}
+  .logo img{width:100%;height:100%;object-fit:cover;display:block}
   .brand h1{font-size:19px;margin:0;letter-spacing:.5px}
   .brand small{color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase}
   .hd-right{display:flex;flex-direction:column;align-items:flex-end;gap:8px}
@@ -37,7 +37,7 @@
   .actions{display:flex;gap:8px}
   .btn{cursor:pointer;border:1px solid var(--line);background:#0c1219;color:var(--tx);font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:600;padding:8px 12px;border-radius:9px;transition:.2s;display:inline-flex;align-items:center;gap:6px}
   .btn:hover{border-color:var(--cy);color:var(--cy);box-shadow:var(--glow)}
-  .btn.primary{background:linear-gradient(90deg,rgba(34,211,238,.18),rgba(232,121,249,.14));border-color:rgba(34,211,238,.4)}
+  .btn.primary{background:linear-gradient(90deg,rgba(242,101,34,.18),rgba(255,154,90,.14));border-color:rgba(242,101,34,.4)}
   /* verdict band */
   .verdict{display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:14px;margin-bottom:14px;border:1px solid var(--line);
     background:linear-gradient(90deg,rgba(52,211,153,.12),transparent);}
@@ -60,7 +60,7 @@
   .st-defendido .badge{background:rgba(52,211,153,.14);color:var(--gr);border:1px solid rgba(52,211,153,.3)}
   .st-hallazgo .badge{background:rgba(251,191,36,.14);color:var(--am);border:1px solid rgba(251,191,36,.3)}
   .st-vulnerable .badge{background:rgba(248,113,113,.14);color:var(--rd);border:1px solid rgba(248,113,113,.3);animation:blink 1.8s ease-in-out infinite}
-  .st-corriendo .badge{background:rgba(34,211,238,.14);color:var(--cy);border:1px solid rgba(34,211,238,.35);animation:blink 1.6s ease-in-out infinite}
+  .st-corriendo .badge{background:rgba(242,101,34,.14);color:var(--cy);border:1px solid rgba(242,101,34,.35);animation:blink 1.6s ease-in-out infinite}
   .card .name{font-weight:600;font-size:14px}
   .card .det{color:var(--muted);font-size:12px;margin-top:3px;line-height:1.4}
   .tags{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap}
@@ -97,6 +97,20 @@
   .promptbox pre{font-family:'JetBrains Mono',monospace;font-size:11.5px;line-height:1.5;background:#05090d;border:1px solid var(--line);border-radius:9px;padding:12px;white-space:pre-wrap;color:#b9c6d3;max-height:160px;overflow:auto;margin:0}
   .copybtn{position:absolute;top:8px;right:8px}
   .empty{color:var(--muted);text-align:center;padding:20px;font-size:13px}
+  table.stats{width:100%;border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:12px}
+  table.stats th{text-align:left;color:var(--muted);font-weight:600;font-size:10px;text-transform:uppercase;letter-spacing:1px;padding:6px 10px;border-bottom:1px solid var(--line)}
+  table.stats td{padding:7px 10px;border-bottom:1px solid #0e151d}
+  table.stats tr:hover td{background:#0c1219}
+  .barcell{position:relative}
+  .barcell .bar{position:absolute;left:0;top:0;bottom:0;background:rgba(242,101,34,.16);z-index:0}
+  .barcell span{position:relative;z-index:1}
+  .cpuhot{color:var(--am);font-weight:600}
+  .logfeed{font-family:'JetBrains Mono',monospace;font-size:11.5px;height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:3px}
+  .logline{display:flex;gap:9px;padding:3px 7px;border-radius:5px;border-left:2px solid var(--line);background:#070d13;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .logline .lh{color:var(--muted)} .logline .lc{color:var(--cy);min-width:70px}
+  .logline.warn{border-left-color:var(--am)} .logline.warn .lm{color:var(--am)}
+  .logline.err{border-left-color:var(--rd)} .logline.err .lm{color:var(--rd)}
+  .logline .lm{color:#9fb0c0;overflow:hidden;text-overflow:ellipsis}
   footer{color:var(--muted);font-size:11px;text-align:center;margin-top:16px;font-family:'JetBrains Mono',monospace}
 </style>
 </head>
@@ -104,7 +118,7 @@
 <div class="scan"></div>
 <header>
   <div class="brand">
-    <div class="logo">DB</div>
+    <div class="logo"><img src="logo-avatar.svg" alt="DBB Labs"></div>
     <div><h1>DBB&nbsp;Labs <span style="color:var(--muted);font-weight:400">· Centro de Comando</span></h1>
     <small id="modo">inicializando…</small></div>
   </div>
@@ -148,6 +162,18 @@
 
 <div class="panel" style="margin-bottom:14px"><h2><span class="live"></span>Actividad de red · tráfico real del lab</h2><canvas id="activity" class="viz" height="90"></canvas></div>
 
+<div class="panel" style="margin-bottom:14px">
+  <h2><span class="live"></span>Contenedores del lab · docker stats (real)</h2>
+  <div style="overflow-x:auto"><table class="stats"><thead><tr>
+    <th>Contenedor</th><th>CPU %</th><th>Memoria</th><th>Mem %</th><th>Disco R/W</th><th>Red I/O</th><th>PIDs</th>
+  </tr></thead><tbody id="stats-body"></tbody></table></div>
+</div>
+
+<div class="panel" style="margin-bottom:14px">
+  <h2><span class="live"></span>Logs en vivo del lab</h2>
+  <div class="logfeed" id="logfeed"></div>
+</div>
+
 <div class="kpis">
   <div class="panel kpi k-cy"><div class="n" id="k-vec">0</div><div class="l">Vectores</div></div>
   <div class="panel kpi k-gr"><div class="n" id="k-def">0</div><div class="l">Defendidos</div></div>
@@ -179,20 +205,20 @@ function mkDonut(s){const data=[s.critica,s.alta,s.media,s.baja];if(donut){donut
 /* osciloscopio */
 const osc=$('osc');let ox=osc.getContext('2d'),oscPhase=0;
 function drawOsc(){const w=osc.clientWidth,h=180;ox.clearRect(0,0,w,h);
-  ox.strokeStyle='rgba(34,211,238,.08)';ox.lineWidth=1;
+  ox.strokeStyle='rgba(242,101,34,.08)';ox.lineWidth=1;
   for(let gx=0;gx<w;gx+=w/16){ox.beginPath();ox.moveTo(gx,0);ox.lineTo(gx,h);ox.stroke();}
   for(let gy=0;gy<h;gy+=h/6){ox.beginPath();ox.moveTo(0,gy);ox.lineTo(w,gy);ox.stroke();}
   const s=M.serie_cpu||[];const max=Math.max(20,Math.max(...s,0));const step=w/Math.max(1,s.length-1);
-  ox.beginPath();ox.strokeStyle='rgba(34,211,238,.95)';ox.lineWidth=2;ox.shadowBlur=10;ox.shadowColor='#22d3ee';
+  ox.beginPath();ox.strokeStyle='rgba(242,101,34,.95)';ox.lineWidth=2;ox.shadowBlur=10;ox.shadowColor='#f26522';
   s.forEach((v,i)=>{const y=h-(v/max)*(h-16)-8;i?ox.lineTo(i*step,y):ox.moveTo(0,y);});ox.stroke();ox.shadowBlur=0;
-  const cur=s.length?s[s.length-1]:0;ox.fillStyle='#22d3ee';ox.font='600 13px "JetBrains Mono",monospace';ox.fillText('CPU '+cur.toFixed(1)+'% · real',10,18);}
+  const cur=s.length?s[s.length-1]:0;ox.fillStyle='#f26522';ox.font='600 13px "JetBrains Mono",monospace';ox.fillText('CPU '+cur.toFixed(1)+'% · real',10,18);}
 /* radar */
 const radar=$('radar');let rx=radar.getContext('2d'),sweep=0;
 function drawRadar(){const w=radar.clientWidth,h=180,cx=w/2,cy=h/2,R=Math.min(cx,cy)-6;rx.clearRect(0,0,w,h);
   rx.strokeStyle='rgba(52,211,153,.18)';rx.lineWidth=1;
   for(let i=1;i<=3;i++){rx.beginPath();rx.arc(cx,cy,R*i/3,0,7);rx.stroke();}
   rx.beginPath();rx.moveTo(cx-R,cy);rx.lineTo(cx+R,cy);rx.moveTo(cx,cy-R);rx.lineTo(cx,cy+R);rx.stroke();
-  const g=rx.createRadialGradient(cx,cy,0,cx,cy,R);g.addColorStop(0,'rgba(34,211,238,.30)');g.addColorStop(1,'rgba(34,211,238,0)');
+  const g=rx.createRadialGradient(cx,cy,0,cx,cy,R);g.addColorStop(0,'rgba(242,101,34,.30)');g.addColorStop(1,'rgba(242,101,34,0)');
   rx.fillStyle=g;rx.beginPath();rx.moveTo(cx,cy);rx.arc(cx,cy,R,sweep,sweep+0.5);rx.closePath();rx.fill();
   const cs=M.containers||[];const n=cs.length||1;const maxc=Math.max(1,Math.max(...cs.map(c=>c.cpu),0));
   cs.forEach((c,i)=>{const ang=i/n*Math.PI*2;const rr=R*(0.30+0.6*(1-c.cpu/(maxc*1.3+1)));
@@ -201,17 +227,26 @@ function drawRadar(){const w=radar.clientWidth,h=180,cx=w/2,cy=h/2,R=Math.min(cx
     const size=3+Math.min(8,c.cpu*1.4);rx.fillStyle=c.cpu>4?'#fbbf24':'#34d399';rx.shadowBlur=flash?16:6;rx.shadowColor=rx.fillStyle;
     rx.beginPath();rx.arc(bx,by,flash?size+2:size,0,7);rx.fill();rx.shadowBlur=0;
     if(flash){rx.fillStyle='#cfe';rx.font='9px "JetBrains Mono",monospace';rx.fillText(c.name.slice(0,10),bx+8,by+3);}});
-  rx.fillStyle='#728294';rx.font='10px "JetBrains Mono",monospace';rx.fillText((M.n||0)+' contenedores · real',8,14);
+  // haces de ataque: cuando hay un vector corriendo, golpea contenedores
+  const atacando=(D.ataques||[]).some(a=>a.estado==='corriendo');
+  if(atacando&&cs.length){const now=performance.now()/1000;
+    for(let k=0;k<3;k++){const idx=Math.floor(Math.abs(Math.sin(now*0.4+k*2))*cs.length)%cs.length;
+      const ang=idx/n*Math.PI*2;const rr=R*(0.30+0.6*(1-cs[idx].cpu/(maxc*1.3+1)));
+      const bx=cx+Math.cos(ang)*rr,by=cy+Math.sin(ang)*rr;
+      rx.strokeStyle='rgba(248,113,113,.45)';rx.lineWidth=1.4;rx.beginPath();rx.moveTo(cx,cy);rx.lineTo(bx,by);rx.stroke();
+      const p=(now*0.6+k*0.33)%1,px=cx+(bx-cx)*p,py=cy+(by-cy)*p;
+      rx.fillStyle='#f87171';rx.shadowBlur=12;rx.shadowColor='#f87171';rx.beginPath();rx.arc(px,py,3,0,7);rx.fill();rx.shadowBlur=0;}}
+  rx.fillStyle='#728294';rx.font='10px "JetBrains Mono",monospace';rx.fillText((M.n||0)+' contenedores · real'+(atacando?' · ⚡ bajo ataque':''),8,14);
   sweep+=0.028;}
 /* actividad */
 const act=$('activity');let ax=act.getContext('2d'),series=[];
 function drawAct(){const w=act.clientWidth,h=90;ax.clearRect(0,0,w,h);
   const s=M.serie_net||[];const max=Math.max(10,Math.max(...s,0));const step=w/Math.max(1,s.length-1);
   ax.strokeStyle='rgba(96,165,250,.08)';for(let gy=0;gy<h;gy+=h/4){ax.beginPath();ax.moveTo(0,gy);ax.lineTo(w,gy);ax.stroke();}
-  const grad=ax.createLinearGradient(0,0,0,h);grad.addColorStop(0,'rgba(34,211,238,.5)');grad.addColorStop(1,'rgba(34,211,238,0)');
+  const grad=ax.createLinearGradient(0,0,0,h);grad.addColorStop(0,'rgba(242,101,34,.5)');grad.addColorStop(1,'rgba(242,101,34,0)');
   ax.beginPath();ax.moveTo(0,h);s.forEach((v,i)=>ax.lineTo(i*step,h-(v/max)*(h-12)));ax.lineTo(Math.max(0,(s.length-1))*step,h);ax.closePath();ax.fillStyle=grad;ax.fill();
-  ax.beginPath();s.forEach((v,i)=>{const y=h-(v/max)*(h-12);i===0?ax.moveTo(0,y):ax.lineTo(i*step,y);});ax.strokeStyle='#22d3ee';ax.lineWidth=1.5;ax.shadowBlur=8;ax.shadowColor='#22d3ee';ax.stroke();ax.shadowBlur=0;
-  const cur=s.length?s[s.length-1]:0;ax.fillStyle='#22d3ee';ax.font='600 12px "JetBrains Mono",monospace';ax.fillText(Math.round(cur)+' KB/s · real',10,16);}
+  ax.beginPath();s.forEach((v,i)=>{const y=h-(v/max)*(h-12);i===0?ax.moveTo(0,y):ax.lineTo(i*step,y);});ax.strokeStyle='#f26522';ax.lineWidth=1.5;ax.shadowBlur=8;ax.shadowColor='#f26522';ax.stroke();ax.shadowBlur=0;
+  const cur=s.length?s[s.length-1]:0;ax.fillStyle='#f26522';ax.font='600 12px "JetBrains Mono",monospace';ax.fillText(Math.round(cur)+' KB/s · real',10,16);}
 function loop(){energy*=0.94;drawOsc();drawRadar();drawAct();requestAnimationFrame(loop);}
 addEventListener('resize',()=>{ox=fitCanvas(osc);rx=fitCanvas(radar);ax=fitCanvas(act);});
 ox=fitCanvas(osc);rx=fitCanvas(radar);ax=fitCanvas(act);loop();
@@ -287,6 +322,7 @@ let M={serie_cpu:[],serie_net:[],containers:[],totales:{cpu:0,mem_mib:0,rx_rate_
 async function tick(){
   try{const r=await fetch('estado.json?_='+Date.now());render(await r.json());}catch(e){}
   try{const m=await fetch('metricas.json?_='+Date.now());M=await m.json();renderMetrics();}catch(e){}
+  renderLogs();
 }
 function renderMetrics(){const t=M.totales||{};
   $('m-cont').textContent=(M.n||0);
@@ -297,7 +333,24 @@ function renderMetrics(){const t=M.totales||{};
   const done=D.estado==='completado';
   $('m-run').textContent=corr?('⚡ '+corr.nombre):(done?'✓ análisis completado':'en espera');
   $('m-run').style.color=corr?'var(--cy)':(done?'var(--gr)':'var(--muted)');
+  // tabla docker stats real
+  const cs=M.containers||[];const maxcpu=Math.max(1,...cs.map(c=>c.cpu));
+  $('stats-body').innerHTML=cs.map(c=>`<tr>
+    <td>${c.name}</td>
+    <td class="barcell ${c.cpu>5?'cpuhot':''}"><div class="bar" style="width:${Math.min(100,c.cpu/maxcpu*100)}%"></div><span>${c.cpu.toFixed(2)}%</span></td>
+    <td>${c.mem>=1024?(c.mem/1024).toFixed(2)+' GiB':Math.round(c.mem)+' MiB'}</td>
+    <td>${(c.mem_pct||0).toFixed(2)}%</td>
+    <td>${fmtmb(c.disk_r)} / ${fmtmb(c.disk_w)}</td>
+    <td>${fmtmb(c.rx)} / ${fmtmb(c.tx)}</td>
+    <td>${c.pids||0}</td></tr>`).join('');
 }
+function fmtmb(v){v=v||0;return v>=1024?(v/1024).toFixed(1)+'GB':v>=1?v.toFixed(1)+'MB':Math.round(v*1024)+'KB';}
+let lastLog=0;
+async function renderLogs(){try{const r=await fetch('logs.json?_='+Date.now());const ls=(await r.json()).lineas||[];
+  if(ls.length!==lastLog){lastLog=ls.length;const f=$('logfeed');
+    f.innerHTML=ls.map(l=>`<div class="logline ${l.sev}"><span class="lh">${l.hora}</span><span class="lc">${l.cont}</span><span class="lm">${(l.msg||'').replace(/</g,'&lt;')}</span></div>`).join('');
+    f.scrollTop=f.scrollHeight;}
+}catch(e){}}
 tick();setInterval(tick,1000);
 </script>
 </body>
