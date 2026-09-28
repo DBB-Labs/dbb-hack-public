@@ -147,11 +147,21 @@
     <small id="modo">inicializando…</small></div>
   </div>
   <div class="hd-right">
-    <div class="actions">
+    <div class="actions" style="align-items:center">
+      <div id="prog-wrap" title="Progreso del ataque" style="display:none;position:relative;width:52px;height:52px;flex:none;margin-right:4px">
+        <svg width="52" height="52" viewBox="0 0 52 52">
+          <circle cx="26" cy="26" r="21" stroke="#0a1017" stroke-width="6" fill="none"/>
+          <circle id="prog-ring" cx="26" cy="26" r="21" stroke="url(#pg)" stroke-width="6" fill="none" stroke-linecap="round"
+            stroke-dasharray="131.9" stroke-dashoffset="131.9" transform="rotate(-90 26 26)" style="transition:stroke-dashoffset .5s ease"/>
+          <defs><linearGradient id="pg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f26522"/><stop offset="1" stop-color="#ff9a5a"/></linearGradient></defs>
+        </svg>
+        <div id="prog-pct" style="position:absolute;inset:0;display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12px;color:var(--cy)">0%</div>
+      </div>
       <button class="btn" onclick="toggleInforme()">📄 Informe</button>
       <button class="btn primary" onclick="exportar()">⬇ Exportar PDF</button>
       <button class="btn" onclick="descargarJSON()">⬇ Datos</button>
     </div>
+    <div id="prog-lbl" style="display:none"></div>
     <div class="target"><span class="t" id="objetivo">—</span> · <span class="s" id="stack">—</span>
       &nbsp;<span class="pill"><span class="dot" id="livedot"></span><span id="estadoLbl">EN VIVO</span></span></div>
   </div>
@@ -177,18 +187,6 @@
     <button class="btn" style="font-size:13px;padding:11px 14px" onclick="limpiar()">🗑 Limpiar</button>
   </div>
   <div id="c-msg" style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--cy)"></div>
-  <div id="prog-wrap" style="display:none;margin-top:12px;align-items:center;gap:14px">
-    <div style="position:relative;width:76px;height:76px;flex:none">
-      <svg width="76" height="76" viewBox="0 0 76 76">
-        <circle cx="38" cy="38" r="30" stroke="#0a1017" stroke-width="8" fill="none"/>
-        <circle id="prog-ring" cx="38" cy="38" r="30" stroke="url(#pg)" stroke-width="8" fill="none" stroke-linecap="round"
-          stroke-dasharray="188.5" stroke-dashoffset="188.5" transform="rotate(-90 38 38)" style="transition:stroke-dashoffset .5s ease"/>
-        <defs><linearGradient id="pg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f26522"/><stop offset="1" stop-color="#ff9a5a"/></linearGradient></defs>
-      </svg>
-      <div id="prog-pct" style="position:absolute;inset:0;display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:16px;color:var(--cy)">0%</div>
-    </div>
-    <div id="prog-lbl" style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted)">Progreso</div>
-  </div>
 </div>
 
 <div class="panel" style="margin-bottom:10px;display:flex;gap:20px;align-items:center;flex-wrap:wrap">
@@ -222,22 +220,19 @@
   </tr></thead><tbody id="stats-body"></tbody></table></div>
 </div>
 
-<div class="panel" style="margin-bottom:10px">
-  <h2><span class="live"></span>Logs en vivo del lab</h2>
-  <div class="logfeed" id="logfeed"></div>
-</div>
-
-<div class="kpis">
-  <div class="panel kpi k-cy"><div class="n" id="k-vec">0</div><div class="l">Vectores</div></div>
-  <div class="panel kpi k-gr"><div class="n" id="k-def">0</div><div class="l">Defendidos</div></div>
-  <div class="panel kpi k-am"><div class="n" id="k-hal">0</div><div class="l">Hallazgos</div></div>
-  <div class="panel kpi k-bl"><div class="n" id="k-cob">0<span style="font-size:20px">%</span></div><div class="l">Cobertura</div></div>
+<div class="panel" style="margin-bottom:10px"><h2><span class="live"></span>Feed de la corrida</h2>
+  <div class="feed" id="feed" style="height:220px"></div>
 </div>
 
 <div class="grid">
   <div class="panel"><h2><span class="live"></span>Matriz de ataque</h2><div class="atk" id="atk"></div></div>
   <div>
-    <div class="panel" style="margin-bottom:10px"><h2><span class="live"></span>Feed de la corrida</h2><div class="feed" id="feed"></div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div class="panel kpi k-cy"><div class="n" id="k-vec">0</div><div class="l">Vectores</div></div>
+      <div class="panel kpi k-gr"><div class="n" id="k-def">0</div><div class="l">Defendidos</div></div>
+      <div class="panel kpi k-am"><div class="n" id="k-hal">0</div><div class="l">Hallazgos</div></div>
+      <div class="panel kpi k-bl"><div class="n" id="k-cob">0<span style="font-size:18px">%</span></div><div class="l">Cobertura</div></div>
+    </div>
     <div class="panel"><h2>Severidad de hallazgos</h2><canvas id="donut" height="150"></canvas></div>
   </div>
 </div>
@@ -381,10 +376,10 @@ function render(d){D=d;const done=d.estado==='completado';document.body.classLis
   $('estadoLbl').textContent=done?'✓ COMPLETADO':'EN VIVO';
   // barra de progreso
   const pw=$('prog-wrap'),tot=d.total||0,ejec=(d.ataques||[]).filter(a=>a.estado!=='corriendo').length;
-  if(tot>0){pw.style.display='flex';const pct=done?100:Math.min(100,Math.round(ejec/tot*100));
-    $('prog-ring').style.strokeDashoffset=(188.5-188.5*pct/100).toFixed(1);
+  if(tot>0){pw.style.display='block';const pct=done?100:Math.min(100,Math.round(ejec/tot*100));
+    $('prog-ring').style.strokeDashoffset=(131.9-131.9*pct/100).toFixed(1);
     $('prog-pct').textContent=pct+'%';$('prog-pct').style.color=done?'var(--gr)':'var(--cy)';
-    $('prog-lbl').textContent=done?'✓ Ataque finalizado':('⚡ Atacando… '+ejec+'/'+tot+' vectores');}
+    pw.title=done?'Ataque finalizado':('Atacando… '+ejec+'/'+tot+' vectores');}
   else pw.style.display='none';
   countTo($('k-vec'),d.kpis.vectores);countTo($('k-def'),d.kpis.defendidos);countTo($('k-hal'),d.kpis.hallazgos);countTo($('k-cob'),d.kpis.cobertura);
   const g=Math.max(0,Math.min(100,d.integridad||0));$('gaugeArc').style.strokeDashoffset=251-251*g/100;$('gaugeVal').textContent=g;$('gaugeVal').style.color=g>=80?'var(--gr)':g>=50?'var(--am)':'var(--rd)';
@@ -536,7 +531,6 @@ async function tick(){
   try{const r=await fetch('estado.json?_='+Date.now());render(await r.json());}
   catch(e){const el=$('modo');if(el){el.textContent='🔴 sin conexión al servidor — arranca: bash dashboard/servir.sh';el.style.color='var(--rd)';}}
   try{const m=await fetch('metricas.json?_='+Date.now());M=await m.json();renderMetrics();}catch(e){}
-  renderLogs();
 }
 function renderMetrics(){const t=M.totales||{};
   $('m-cont').textContent=(M.n||0);
