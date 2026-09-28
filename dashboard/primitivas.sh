@@ -154,5 +154,47 @@ case "$PRIM" in
     s=$(python3 -c "import json;print(len(json.load(open('/tmp/sg.json')).get('results',[])))" 2>/dev/null||echo 0)
     [ "${s:-0}" = "0" ] && out defendido "semgrep: 0 hallazgos" "{\"n\":0}" || out hallazgo "semgrep: $s hallazgos" "{\"n\":$s}";;
 
+  # ── BAMF implementados (señal confiable contra Supabase+Next) ──
+
+  # B4 mass-assignment: no basta el permiso de columna — RLS puede bloquear. Se PRUEBA la
+  # escritura real: como cliente A, intentar tocar columnas sensibles en filas ajenas y
+  # contar filas afectadas (todo dentro de rollback). Solo cuenta si de verdad afecta.
+  # args: <id-cliente>
+  b4-mass-assign)
+    lab_vivo || { out no-probado "lab no montado" "{}"; exit 0; }
+    ca="${1:-}"; esUUID "$ca" || { out no-probado "sin cuenta de cliente — no probado" "{}"; exit 0; }
+    # candidatos: (tabla,columna) sensibles con permiso de UPDATE para authenticated
+    cands=$(echo "select table_name||'|'||column_name from information_schema.role_column_grants where grantee='authenticated' and privilege_type='UPDATE' and table_schema='app' and (column_name ~* 'role|is_system|is_admin|balance|saldo|amount|monto|estado|status|verified|verificad|mfa|permis|approv|aprob');" | run_sql | grep '|')
+    [ -z "$cands" ] && { out defendido "authenticated no tiene permiso sobre columnas sensibles en app.*" "{}"; exit 0; }
+    escritas=""
+    while IFS='|' read -r t c; do
+      [ -z "$t" ] && continue
+      owner=$(echo "select column_name from information_schema.columns where table_schema='app' and table_name='$t' and column_name ~* 'client_id|user_id|owner|profile_id' limit 1;" | run_sql | tail -1)
+      [ -z "$owner" ] && continue
+      n=$(printf "begin; set local role authenticated; select set_config('request.jwt.claims','{\"sub\":\"%s\",\"role\":\"authenticated\",\"aal\":\"aal1\"}',true); with u as (update app.%s set %s=%s where %s <> '%s' returning 1) select 'N='||count(*) from u; rollback;" "$ca" "$t" "$c" "$c" "$owner" "$ca" | run_sql 2>/dev/null | grep -oE 'N=[0-9]+' | cut -d= -f2)
+      [ "${n:-0}" != "0" ] && escritas="$escritas app.$t.$c($n)"
+    done <<< "$cands"
+    if [ -z "$escritas" ]; then out defendido "RLS bloquea la escritura de columnas sensibles en filas ajenas" "{}"
+    else out vulnerable "cliente ESCRIBIÓ columnas sensibles en filas ajenas (mass-assignment)" "{\"escrituras\":\"$escritas\"}"; fi;;
+
+  # B5 IDOR profundo / RLS en todos los recursos: ¿alguna tabla de app.* sin RLS?
+  b5-idor-profundo)
+    lab_vivo || { out no-probado "lab no montado" "{}"; exit 0; }
+    sinrls=$(echo "select coalesce(string_agg(relname,', '),'') from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='app' and c.relkind='r' and not c.relrowsecurity;" | run_sql | tail -1)
+    ntot=$(echo "select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='app' and c.relkind='r';" | run_sql | tail -1)
+    if [ -z "$sinrls" ]; then out defendido "RLS activa en las $ntot tablas de app.*" "{\"tablas\":$ntot}"
+    else out vulnerable "tablas de app.* SIN RLS (lectura cruzada posible)" "{\"sin_rls\":\"$sinrls\"}"; fi;;
+
+  # B6 inyección SQL: PostgREST parametriza; probar que una comilla no rompe la consulta
+  b6-sqli)
+    r=$(curl -s "$API/rest/v1/client_profile?select=*&id=eq.x%27or%271%27=%271" -H "apikey: $ANON" | head -c 200)
+    if echo "$r" | grep -qE '22P02|invalid input syntax|PGRST|Only the following|\[\]'; then out defendido "entrada maliciosa rechazada/parametrizada (API de datos)" "{}"
+    else out hallazgo "revisar: la API devolvió datos ante entrada con comillas" "{\"muestra\":$(python3 -c 'import json,sys;print(json.dumps(sys.argv[1]))' "$r")}"; fi;;
+
+  # B12 gestión de sesión: ¿un JWT falso es rechazado por la API?
+  b12-sesion)
+    code=$(curl -s -o /dev/null -w "%{http_code}" "$API/rest/v1/client_profile?select=id" -H "apikey: $ANON" -H "Authorization: Bearer falso.token.invalido")
+    case "$code" in 401|403) out defendido "JWT inválido rechazado (HTTP $code)" "{\"code\":$code}";; 000) out no-probado "API no respondió — no probado" "{}";; *) out hallazgo "JWT inválido no fue rechazado limpio (HTTP $code)" "{\"code\":$code}";; esac;;
+
   *) out no-probado "primitiva desconocida: $PRIM" "{}"; exit 2;;
 esac
