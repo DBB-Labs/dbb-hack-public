@@ -53,7 +53,7 @@
   .k-cy .n{color:var(--cy)} .k-gr .n{color:var(--gr)} .k-am .n{color:var(--am)} .k-bl .n{color:var(--bl)}
   .grid{display:grid;grid-template-columns:1fr 330px;gap:14px}
   @media(max-width:960px){.grid{grid-template-columns:1fr}}
-  .atk{display:flex;flex-direction:column;gap:9px;max-height:600px;overflow-y:auto;padding-right:6px}
+  .atk{display:flex;flex-direction:column;gap:9px;flex:1;min-height:0;overflow-y:auto;padding-right:6px}
   .atk::-webkit-scrollbar{width:8px} .atk::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
   .card{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:11px;border:1px solid var(--line);background:#0a1017;transition:.3s}
   .card:hover{border-color:#2b3a4d;transform:translateX(2px)}
@@ -147,21 +147,11 @@
     <small id="modo">inicializando…</small></div>
   </div>
   <div class="hd-right">
-    <div class="actions" style="align-items:center">
-      <div id="prog-wrap" title="Progreso del ataque" style="display:none;position:relative;width:52px;height:52px;flex:none;margin-right:4px">
-        <svg width="52" height="52" viewBox="0 0 52 52">
-          <circle cx="26" cy="26" r="21" stroke="#0a1017" stroke-width="6" fill="none"/>
-          <circle id="prog-ring" cx="26" cy="26" r="21" stroke="url(#pg)" stroke-width="6" fill="none" stroke-linecap="round"
-            stroke-dasharray="131.9" stroke-dashoffset="131.9" transform="rotate(-90 26 26)" style="transition:stroke-dashoffset .5s ease"/>
-          <defs><linearGradient id="pg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f26522"/><stop offset="1" stop-color="#ff9a5a"/></linearGradient></defs>
-        </svg>
-        <div id="prog-pct" style="position:absolute;inset:0;display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12px;color:var(--cy)">0%</div>
-      </div>
+    <div class="actions">
       <button class="btn" onclick="toggleInforme()">📄 Informe</button>
       <button class="btn primary" onclick="exportar()">⬇ Exportar PDF</button>
       <button class="btn" onclick="descargarJSON()">⬇ Datos</button>
     </div>
-    <div id="prog-lbl" style="display:none"></div>
     <div class="target"><span class="t" id="objetivo">—</span> · <span class="s" id="stack">—</span>
       &nbsp;<span class="pill"><span class="dot" id="livedot"></span><span id="estadoLbl">EN VIVO</span></span></div>
   </div>
@@ -172,7 +162,20 @@
   <div class="txt"><b id="v-txt">—</b><div id="v-sub">—</div></div>
 </div>
 
-<div class="panel" style="margin-bottom:10px">
+<div class="panel" style="margin-bottom:10px;display:flex;gap:20px;align-items:stretch">
+  <div style="flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-width:110px">
+    <div id="prog-wrap" style="position:relative;width:96px;height:96px">
+      <svg width="96" height="96" viewBox="0 0 96 96">
+        <circle cx="48" cy="48" r="40" stroke="#0a1017" stroke-width="9" fill="none"/>
+        <circle id="prog-ring" cx="48" cy="48" r="40" stroke="url(#pg)" stroke-width="9" fill="none" stroke-linecap="round"
+          stroke-dasharray="251.3" stroke-dashoffset="251.3" transform="rotate(-90 48 48)" style="transition:stroke-dashoffset .5s ease"/>
+        <defs><linearGradient id="pg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f26522"/><stop offset="1" stop-color="#ff9a5a"/></linearGradient></defs>
+      </svg>
+      <div id="prog-pct" style="position:absolute;inset:0;display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:22px;color:var(--cy)">0%</div>
+    </div>
+    <div id="prog-lbl" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-align:center">progreso</div>
+  </div>
+  <div style="flex:1;min-width:0">
   <h2>Panel de control · seleccionar y lanzar</h2>
   <div style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap">
     <label style="font-size:12px;color:var(--muted)">Objetivo<br>
@@ -187,6 +190,7 @@
     <button class="btn" style="font-size:13px;padding:11px 14px" onclick="limpiar()">🗑 Limpiar</button>
   </div>
   <div id="c-msg" style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--cy)"></div>
+  </div>
 </div>
 
 <div class="panel" style="margin-bottom:10px;display:flex;gap:20px;align-items:center;flex-wrap:wrap">
@@ -225,7 +229,7 @@
 </div>
 
 <div class="grid">
-  <div class="panel"><h2><span class="live"></span>Matriz de ataque</h2><div class="atk" id="atk"></div></div>
+  <div class="panel" style="display:flex;flex-direction:column"><h2><span class="live"></span>Matriz de ataque</h2><div class="atk" id="atk"></div></div>
   <div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
       <div class="panel kpi k-cy"><div class="n" id="k-vec">0</div><div class="l">Vectores</div></div>
@@ -375,12 +379,11 @@ function render(d){D=d;const done=d.estado==='completado';document.body.classLis
   $('objetivo').textContent=d.objetivo||'—';$('stack').textContent=d.stack||'';
   $('estadoLbl').textContent=done?'✓ COMPLETADO':'EN VIVO';
   // barra de progreso
-  const pw=$('prog-wrap'),tot=d.total||0,ejec=(d.ataques||[]).filter(a=>a.estado!=='corriendo').length;
-  if(tot>0){pw.style.display='block';const pct=done?100:Math.min(100,Math.round(ejec/tot*100));
-    $('prog-ring').style.strokeDashoffset=(131.9-131.9*pct/100).toFixed(1);
-    $('prog-pct').textContent=pct+'%';$('prog-pct').style.color=done?'var(--gr)':'var(--cy)';
-    pw.title=done?'Ataque finalizado':('Atacando… '+ejec+'/'+tot+' vectores');}
-  else pw.style.display='none';
+  const tot=d.total||0,ejec=(d.ataques||[]).filter(a=>a.estado!=='corriendo').length;
+  const pct=tot>0?(done?100:Math.min(100,Math.round(ejec/tot*100))):0;
+  $('prog-ring').style.strokeDashoffset=(251.3-251.3*pct/100).toFixed(1);
+  $('prog-pct').textContent=pct+'%';$('prog-pct').style.color=done&&tot?'var(--gr)':(pct>0?'var(--cy)':'var(--muted)');
+  $('prog-lbl').textContent=(tot&&!done)?('⚡ '+ejec+'/'+tot):(done&&tot?'✓ finalizado':'progreso');
   countTo($('k-vec'),d.kpis.vectores);countTo($('k-def'),d.kpis.defendidos);countTo($('k-hal'),d.kpis.hallazgos);countTo($('k-cob'),d.kpis.cobertura);
   const g=Math.max(0,Math.min(100,d.integridad||0));$('gaugeArc').style.strokeDashoffset=251-251*g/100;$('gaugeVal').textContent=g;$('gaugeVal').style.color=g>=80?'var(--gr)':g>=50?'var(--am)':'var(--rd)';
   const sev={critica:0,alta:0,media:0,baja:0};(d.ataques||[]).forEach(a=>{if(a.estado==='hallazgo'||a.estado==='vulnerable'){const k=a.severidad||'media';sev[k]=(sev[k]||0)+1;}});
