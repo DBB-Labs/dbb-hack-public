@@ -1,11 +1,11 @@
 # DBB-HACK
 
-> © 2026 Felipe Córdova · DBB Labs — Todos los derechos reservados. Software propietario, sin licencia de uso a terceros (ver LICENSE). Uso solo sobre sistemas propios o autorizados por escrito.
+> © 2026 Felipe Córdova · DBB Labs — Licencia **GNU AGPL-3.0** (ver LICENSE) + alcances legales chilenos. Herramienta ofensiva: uso solo sobre sistemas propios o autorizados por escrito.
 
 Pentester interno de DBB para apps **Next.js + Supabase**, con **consola de centro de
 comando (DBB Labs)**. Corre sobre Claude Code / herramientas locales — sin pagar por token.
 Guiado por playbooks adaptados de Strix (Apache-2.0, ver `NOTICE`) y mapeado a ISO 27002 /
-OWASP. Licencia propietaria (ver `LICENSE`).
+OWASP. Licencia: **GNU AGPL-3.0** (ver `LICENSE`), con alcances legales chilenos anexos.
 
 ## Qué hace (hoy)
 - **Análisis estático** del código: secretos (gitleaks), dependencias (npm audit), SAST (semgrep).
