@@ -8,6 +8,7 @@ D="$(cd "$(dirname "$0")" && pwd)"; EMP="$D/emitir.py"
 OBJ="${1:-kapa21-v2}"; NIVEL="${2:-full}"; VEC="${3:-all}"
 API="http://127.0.0.1:54321"
 ANON="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0"
+SVC="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU"
 APP="http://localhost:3000"
 REPO="$HOME/Documents/Proyectos/$OBJ"
 export PATH="$HOME/Library/Python/3.9/bin:$HOME/.local/bin:$PATH"
@@ -45,12 +46,15 @@ if [ "$LIVE" != 1 ]; then
   if [ "$VEC" = "all" ]; then VEC="S1,S2,S3"; else VEC="$(echo "$VEC" | tr ',' '\n' | grep -E '^(S1|S2|S3)$' | paste -sd, -)"; fi
 fi
 
-# IDs de cuentas (solo si hay lab vivo del objetivo)
+# IDs de cuentas (solo si hay lab vivo del objetivo). Se validan como UUID:
+# en un proyecto sin el esquema de kapa21, la consulta da error y NO es un UUID → los
+# vectores A1/A2/A3 quedan 'no probado' en vez de inventar.
 IDA=""; IDB=""; IDO=""
+esUUID(){ echo "$1" | grep -qiE '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'; }
 if [ "$LIVE" = 1 ]; then
-  IDA="$(echo "select id from app.client_profile order by created_at limit 1;" | run_sql)"
-  IDB="$(echo "select id from app.client_profile order by created_at offset 1 limit 1;" | run_sql)"
-  IDO="$(echo "select id from app.operator_profile where not is_system and mfa_enrolled_at is null limit 1;" | run_sql)"
+  a="$(echo "select id from app.client_profile order by created_at limit 1;" | run_sql | tail -1)"; esUUID "$a" && IDA="$a"
+  b="$(echo "select id from app.client_profile order by created_at offset 1 limit 1;" | run_sql | tail -1)"; esUUID "$b" && IDB="$b"
+  o="$(echo "select id from app.operator_profile where not is_system and mfa_enrolled_at is null limit 1;" | run_sql | tail -1)"; esUUID "$o" && IDO="$o"
 fi
 
 if want A0; then vec A0 "Robo externo sin cuenta" "Sin cuenta" "API1/API3" "A.8.3"
@@ -127,10 +131,14 @@ if want A8; then vec A8 "Open redirect" "Web" "API1" "A.8.26"
   echo "$loc" | grep -qi "evil.com" && res A8 vulnerable "Open redirect" "Web" "API1" "A.8.26" "REDIRIGE A evil.com" || res A8 defendido "Open redirect" "Web" "API1" "A.8.26" "ignora el destino externo"
 fi
 if want A9; then vec A9 "Enumeracion de usuarios" "Auth" "API3" "A.8.5"
-  em evento ataque "A9 login con correo existente vs inexistente..."
-  e1=$(curl -s -X POST "$API/auth/v1/token?grant_type=password" -H "apikey: $ANON" -H "Content-Type: application/json" -d '{"email":"e2e-titular@e2e.kapa21.cl","password":"x"}' | python3 -c "import sys,json;print(json.load(sys.stdin).get('error_code'))" 2>/dev/null)
-  e2=$(curl -s -X POST "$API/auth/v1/token?grant_type=password" -H "apikey: $ANON" -H "Content-Type: application/json" -d '{"email":"noexiste@nada.cl","password":"x"}' | python3 -c "import sys,json;print(json.load(sys.stdin).get('error_code'))" 2>/dev/null)
-  [ "$e1" = "$e2" ] && res A9 defendido "Enumeracion de usuarios" "Auth" "API3" "A.8.5" "mismo error, no revela existencia" || res A9 hallazgo "Enumeracion de usuarios" "Auth" "API3" "A.8.5" "respuestas distintas: enumera"
+  em evento ataque "A9 creando usuario efimero y comparando existente vs inexistente..."
+  PROBE="dbbhack-probe-$(date +%s)@dbb.local"
+  curl -s -X POST "$API/auth/v1/admin/users" -H "apikey: $SVC" -H "Authorization: Bearer $SVC" -H "Content-Type: application/json" -d "{\"email\":\"$PROBE\",\"password\":\"Probe-123456!\",\"email_confirm\":true}" >/dev/null 2>&1
+  e1=$(curl -s -X POST "$API/auth/v1/token?grant_type=password" -H "apikey: $ANON" -H "Content-Type: application/json" -d "{\"email\":\"$PROBE\",\"password\":\"malaX\"}" | python3 -c "import sys,json;print(json.load(sys.stdin).get('error_code'))" 2>/dev/null)
+  e2=$(curl -s -X POST "$API/auth/v1/token?grant_type=password" -H "apikey: $ANON" -H "Content-Type: application/json" -d '{"email":"no-existe-jamas@dbb.local","password":"malaX"}' | python3 -c "import sys,json;print(json.load(sys.stdin).get('error_code'))" 2>/dev/null)
+  if [ -z "$e1" ] || [ -z "$e2" ]; then np A9 "Enumeracion de usuarios" "Auth" "API3" "A.8.5" "No se pudo crear el usuario de prueba en este lab — no probado."
+  elif [ "$e1" = "$e2" ]; then res A9 defendido "Enumeracion de usuarios" "Auth" "API3" "A.8.5" "mismo error para existente e inexistente, no revela"
+  else res A9 hallazgo "Enumeracion de usuarios" "Auth" "API3" "A.8.5" "respuestas distintas ($e1 vs $e2): enumera usuarios"; fi
 fi
 if want A10; then vec A10 "Cabeceras de seguridad" "Config" "API8" "A.8.26"
   em evento ataque "A10 revisando cabeceras de seguridad..."
