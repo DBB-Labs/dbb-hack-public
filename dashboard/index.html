@@ -18,9 +18,10 @@
   .panel{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:14px;padding:14px;position:relative;overflow:hidden}
   .panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(34,211,238,.5),transparent)}
   h2{font-size:11px;text-transform:uppercase;letter-spacing:2.5px;color:var(--muted);margin:0 0 10px;display:flex;align-items:center;gap:8px}
-  h2 .live{width:7px;height:7px;border-radius:50%;background:var(--rd);box-shadow:0 0 8px var(--rd);animation:blink 1s infinite}
+  h2 .live{width:7px;height:7px;border-radius:50%;background:var(--rd);box-shadow:0 0 8px var(--rd);animation:blink 2.4s ease-in-out infinite}
   body.done h2 .live,body.done .dot{background:var(--gr)!important;box-shadow:0 0 8px var(--gr)!important;animation:none!important}
-  @keyframes blink{50%{opacity:.25}}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.62}}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
   header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px;flex-wrap:wrap}
   .brand{display:flex;align-items:center;gap:12px}
   .logo{width:46px;height:46px;border-radius:12px;background:conic-gradient(from 210deg,var(--cy),var(--mg),var(--cy));display:grid;place-items:center;font-weight:700;color:#04111a;box-shadow:var(--glow);animation:spin 9s linear infinite}
@@ -32,7 +33,7 @@
   .target .t{font-size:15px;color:var(--cy)} .target .s{color:var(--muted);font-size:11px}
   .pill{display:inline-flex;align-items:center;gap:7px;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid var(--line);background:#0c1219}
   body.done .pill{border-color:rgba(52,211,153,.4);color:var(--gr)}
-  .dot{width:8px;height:8px;border-radius:50%;background:var(--gr);box-shadow:0 0 10px var(--gr);animation:blink 1.3s infinite}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--gr);box-shadow:0 0 10px var(--gr);animation:blink 2.6s ease-in-out infinite}
   .actions{display:flex;gap:8px}
   .btn{cursor:pointer;border:1px solid var(--line);background:#0c1219;color:var(--tx);font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:600;padding:8px 12px;border-radius:9px;transition:.2s;display:inline-flex;align-items:center;gap:6px}
   .btn:hover{border-color:var(--cy);color:var(--cy);box-shadow:var(--glow)}
@@ -58,8 +59,8 @@
   .badge{min-width:40px;height:40px;border-radius:9px;display:grid;place-items:center;font-size:16px}
   .st-defendido .badge{background:rgba(52,211,153,.14);color:var(--gr);border:1px solid rgba(52,211,153,.3)}
   .st-hallazgo .badge{background:rgba(251,191,36,.14);color:var(--am);border:1px solid rgba(251,191,36,.3)}
-  .st-vulnerable .badge{background:rgba(248,113,113,.14);color:var(--rd);border:1px solid rgba(248,113,113,.3);animation:blink .8s infinite}
-  .st-corriendo .badge{background:rgba(34,211,238,.14);color:var(--cy);border:1px solid rgba(34,211,238,.35);animation:blink .7s infinite}
+  .st-vulnerable .badge{background:rgba(248,113,113,.14);color:var(--rd);border:1px solid rgba(248,113,113,.3);animation:blink 1.8s ease-in-out infinite}
+  .st-corriendo .badge{background:rgba(34,211,238,.14);color:var(--cy);border:1px solid rgba(34,211,238,.35);animation:blink 1.6s ease-in-out infinite}
   .card .name{font-weight:600;font-size:14px}
   .card .det{color:var(--muted);font-size:12px;margin-top:3px;line-height:1.4}
   .tags{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap}
@@ -158,7 +159,7 @@
 
 <script>
 const $=id=>document.getElementById(id);
-let donut,lastCount=0,kAnim={},D={ataques:[],eventos:[],severidades:{critica:0,alta:0,media:0,baja:0}},energy=0;
+let donut,lastCount=0,kAnim={},D={ataques:[],eventos:[],severidades:{critica:0,alta:0,media:0,baja:0}},energy=0,sigAtk='',sigFinds='';
 function countTo(el,to){const from=kAnim[el.id]||0;kAnim[el.id]=to;const t0=performance.now(),d=700;
   (function s(t){const p=Math.min(1,(t-t0)/d);el.childNodes[0].nodeValue=Math.round(from+(to-from)*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(s);})(performance.now());}
 function fitCanvas(c){const r=c.getBoundingClientRect();const dpr=devicePixelRatio||1;c.width=r.width*dpr;c.height=c.height*dpr;const x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);return x;}
@@ -212,23 +213,29 @@ function render(d){D=d;const done=d.estado==='completado';document.body.classLis
   if(d.veredicto){$('verdict').style.display='flex';const crit=(d.severidades&&(d.severidades.critica||d.severidades.alta))>0;
     $('v-ico').textContent=crit?'🔴':(d.kpis.hallazgos>0?'🛡️':'✅');
     $('v-txt').textContent=d.veredicto;$('v-sub').textContent=`${d.kpis.defendidos}/${d.kpis.vectores} vectores defendidos · integridad ${g} · ${done?'run completado':'en curso'}`;}
+  const sA=JSON.stringify((d.ataques||[]).map(a=>[a.id,a.estado,a.detalle]));
+  if(sA!==sigAtk){sigAtk=sA;
   $('atk').innerHTML=(d.ataques||[]).map(a=>`<div class="card st-${a.estado}"><div class="badge">${iconos[a.estado]||'•'}</div>
     <div style="flex:1;min-width:0"><div class="name">${a.id} · ${a.nombre}</div><div class="det">${a.detalle||''}</div>
     <div class="tags"><span class="tag">${a.categoria}</span><span class="tag">OWASP ${a.owasp}</span><span class="tag">ISO ${a.iso}</span></div></div>
-    <div class="status-txt">${stTxt[a.estado]||a.estado}</div></div>`).join('');
+    <div class="status-txt">${stTxt[a.estado]||a.estado}</div></div>`).join('');}
   const ev=d.eventos||[],feed=$('feed');
-  feed.innerHTML=ev.map(e=>`<div class="ev ${e.tipo}"><span class="h">${e.hora}</span><span class="x">${e.texto}</span></div>`).join('')+(done?'<div class="fin-end">— fin del run —</div>':'');
-  if(ev.length!==lastCount){feed.scrollTop=feed.scrollHeight;energy=Math.min(1,energy+0.9);lastCount=ev.length;}
+  if(ev.length!==lastCount){ // solo re-render cuando hay evento nuevo → sin parpadeo
+    feed.innerHTML=ev.map(e=>`<div class="ev ${e.tipo}"><span class="h">${e.hora}</span><span class="x">${e.texto}</span></div>`).join('')+(done?'<div class="fin-end">— fin del run —</div>':'');
+    feed.scrollTop=feed.scrollHeight;energy=Math.min(1,energy+0.9);lastCount=ev.length;
+  } else if(done && !feed.querySelector('.fin-end')){feed.insertAdjacentHTML('beforeend','<div class="fin-end">— fin del run —</div>');}
   // findings
   const fs=(d.ataques||[]).filter(a=>a.estado==='hallazgo'||a.estado==='vulnerable');
   $('find-h').textContent=`Hallazgos y remediación (${fs.length})`;
+  const sF=JSON.stringify(fs.map(a=>[a.id,a.estado,a.severidad]));
+  if(sF!==sigFinds){sigFinds=sF;
   $('finds').innerHTML=fs.length?fs.map((a,i)=>{const sv=a.severidad||'media';
     return `<div class="find sev-${sv}"><div class="top"><span class="chip ${sv}">${sv}</span><span class="h3">${a.id} · ${a.nombre}</span>
       <span class="tag">OWASP ${a.owasp}</span><span class="tag">ISO ${a.iso}</span></div>
       <div class="det">${a.detalle||''}</div>
       ${a.recomendacion?`<div class="rec"><b>Recomendación:</b> ${a.recomendacion}</div>`:''}
       ${a.prompt_fix?`<div class="promptbox"><button class="btn copybtn" onclick='copiar(${i})'>📋 Copiar prompt</button><pre id="pf${i}">${a.prompt_fix.replace(/</g,'&lt;')}</pre></div>`:''}
-    </div>`;}).join(''):'<div class="empty">Sin hallazgos: todas las defensas resistieron. 🛡️</div>';
+    </div>`;}).join(''):'<div class="empty">Sin hallazgos: todas las defensas resistieron. 🛡️</div>';}
   window.__fs=fs;
 }
 function copiar(i){const t=(window.__fs[i]||{}).prompt_fix||'';navigator.clipboard.writeText(t).then(()=>{
