@@ -508,7 +508,8 @@ async function limpiar(){
   const obj=(document.getElementById('c-obj').value||'kapa21-v2').trim();
   const msg=document.getElementById('c-msg');
   try{await fetch('/api/limpiar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({objetivo:obj})});
-    lastCount=0;sigAtk='';sigFinds='';msg.style.color='var(--muted)';msg.textContent='🗑 Consola en blanco — listo para lanzar.';
+    lastCount=-1;sigAtk='';sigFinds='';msg.style.color='var(--muted)';msg.textContent='🗑 Consola en blanco — listo para lanzar.';
+    const fe=$('feed');if(fe)fe.innerHTML='';const at=$('atk');if(at)at.innerHTML='';
     const inf=$('informe');if(inf)inf.style.display='none';
   }catch(e){msg.style.color='var(--rd)';msg.textContent='🔴 Sin servidor de control.';}
 }
