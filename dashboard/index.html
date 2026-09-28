@@ -363,7 +363,8 @@ function pintarVectores(){const box=document.getElementById('c-vecs');if(!box)re
   if(!CATALOGO.length){box.innerHTML='<span style="color:var(--muted)">cargando catálogo…</span>';return;}
   let html='';
   scope.forEach(cap=>{const vs=CATALOGO.filter(v=>v.capa===cap);if(!vs.length)return;
-    html+=`<div style="width:100%;color:var(--muted);font-size:10px;letter-spacing:1px;margin:6px 0 2px">${CAPA_LBL[cap]||cap}</div><div style="display:flex;gap:12px;flex-wrap:wrap">`;
+    const impl=vs.filter(v=>v.status==='implementado').length;
+    html+=`<div style="width:100%;color:var(--muted);font-size:10px;letter-spacing:1px;margin:6px 0 2px">${CAPA_LBL[cap]||cap} · <b style="color:var(--gr)">${impl}</b>/${vs.length} listos</div><div style="display:flex;gap:12px;flex-wrap:wrap">`;
     html+=vs.map(v=>{const impl=v.status==='implementado';const chk=impl?'checked':'';const dis=impl?'':'disabled';
       const tag=v.status==='planificado'?' <span style="color:var(--muted)">⏳</span>':(v.status==='manual'?' <span style="color:var(--bl)">🔍</span>':'');
       return `<label title="${(v.desc||'').replace(/"/g,'')}" style="display:flex;align-items:center;gap:5px;cursor:${impl?'pointer':'help'};opacity:${impl?1:.5}"><input type="checkbox" class="cv" value="${v.id}" ${chk} ${dis}> ${v.id} ${v.nombre}${tag}</label>`;}).join('');
