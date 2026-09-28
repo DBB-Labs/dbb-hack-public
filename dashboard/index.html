@@ -53,7 +53,7 @@
   .k-cy .n{color:var(--cy)} .k-gr .n{color:var(--gr)} .k-am .n{color:var(--am)} .k-bl .n{color:var(--bl)}
   .grid{display:grid;grid-template-columns:1fr 330px;gap:14px}
   @media(max-width:960px){.grid{grid-template-columns:1fr}}
-  .atk{display:flex;flex-direction:column;gap:9px;max-height:430px;overflow-y:auto;padding-right:6px}
+  .atk{display:flex;flex-direction:column;gap:9px;max-height:600px;overflow-y:auto;padding-right:6px}
   .atk::-webkit-scrollbar{width:8px} .atk::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
   .card{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:11px;border:1px solid var(--line);background:#0a1017;transition:.3s}
   .card:hover{border-color:#2b3a4d;transform:translateX(2px)}
@@ -109,8 +109,9 @@
   .barcell span{position:relative;z-index:1}
   .cpuhot{color:var(--am);font-weight:600}
   .logfeed{font-family:'JetBrains Mono',monospace;font-size:11.5px;height:170px;overflow-y:auto;display:flex;flex-direction:column;gap:3px}
-  .logline{display:flex;gap:9px;padding:3px 7px;border-radius:5px;border-left:2px solid var(--line);background:#070d13;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .logline .lh{color:var(--muted)} .logline .lc{color:var(--cy);min-width:70px}
+  .logline{display:flex;gap:9px;padding:4px 8px;border-radius:5px;border-left:2px solid var(--line);background:#070d13;white-space:nowrap;align-items:baseline}
+  .logline .lh{color:var(--muted);flex:none} .logline .lc{color:var(--cy);flex:none;min-width:64px}
+  .logline .lm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
   .logline.warn{border-left-color:var(--am)} .logline.warn .lm{color:var(--am)}
   .logline.err{border-left-color:var(--rd)} .logline.err .lm{color:var(--rd)}
   .logline .lm{color:#9fb0c0;overflow:hidden;text-overflow:ellipsis}
@@ -176,11 +177,17 @@
     <button class="btn" style="font-size:13px;padding:11px 14px" onclick="limpiar()">🗑 Limpiar</button>
   </div>
   <div id="c-msg" style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--cy)"></div>
-  <div id="prog-wrap" style="display:none;margin-top:10px">
-    <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:4px">
-      <span id="prog-lbl">Progreso</span><span id="prog-pct">0%</span></div>
-    <div style="height:10px;background:#0a1017;border:1px solid var(--line);border-radius:6px;overflow:hidden">
-      <div id="prog-fill" style="height:100%;width:0%;background:linear-gradient(90deg,var(--cy),var(--mg));transition:width .5s ease;box-shadow:0 0 12px var(--cy)"></div></div>
+  <div id="prog-wrap" style="display:none;margin-top:12px;align-items:center;gap:14px">
+    <div style="position:relative;width:76px;height:76px;flex:none">
+      <svg width="76" height="76" viewBox="0 0 76 76">
+        <circle cx="38" cy="38" r="30" stroke="#0a1017" stroke-width="8" fill="none"/>
+        <circle id="prog-ring" cx="38" cy="38" r="30" stroke="url(#pg)" stroke-width="8" fill="none" stroke-linecap="round"
+          stroke-dasharray="188.5" stroke-dashoffset="188.5" transform="rotate(-90 38 38)" style="transition:stroke-dashoffset .5s ease"/>
+        <defs><linearGradient id="pg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--cy)"/><stop offset="1" stop-color="var(--mg)"/></linearGradient></defs>
+      </svg>
+      <div id="prog-pct" style="position:absolute;inset:0;display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:16px;color:var(--cy)">0%</div>
+    </div>
+    <div id="prog-lbl" style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted)">Progreso</div>
   </div>
 </div>
 
@@ -375,8 +382,9 @@ function render(d){D=d;const done=d.estado==='completado';document.body.classLis
   $('estadoLbl').textContent=done?'✓ COMPLETADO':'EN VIVO';
   // barra de progreso
   const pw=$('prog-wrap'),tot=d.total||0,ejec=(d.ataques||[]).filter(a=>a.estado!=='corriendo').length;
-  if(tot>0){pw.style.display='block';const pct=done?100:Math.min(100,Math.round(ejec/tot*100));
-    $('prog-fill').style.width=pct+'%';$('prog-pct').textContent=pct+'%';
+  if(tot>0){pw.style.display='flex';const pct=done?100:Math.min(100,Math.round(ejec/tot*100));
+    $('prog-ring').style.strokeDashoffset=(188.5-188.5*pct/100).toFixed(1);
+    $('prog-pct').textContent=pct+'%';$('prog-pct').style.color=done?'var(--gr)':'var(--cy)';
     $('prog-lbl').textContent=done?'✓ Ataque finalizado':('⚡ Atacando… '+ejec+'/'+tot+' vectores');}
   else pw.style.display='none';
   countTo($('k-vec'),d.kpis.vectores);countTo($('k-def'),d.kpis.defendidos);countTo($('k-hal'),d.kpis.hallazgos);countTo($('k-cob'),d.kpis.cobertura);
