@@ -114,6 +114,26 @@
   .logline.warn{border-left-color:var(--am)} .logline.warn .lm{color:var(--am)}
   .logline.err{border-left-color:var(--rd)} .logline.err .lm{color:var(--rd)}
   .logline .lm{color:#9fb0c0;overflow:hidden;text-overflow:ellipsis}
+  .card,.stats tr[data-vec]{cursor:pointer}
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:.25s;z-index:200}
+  .overlay.open{opacity:1;pointer-events:auto}
+  .drawer{position:fixed;top:0;right:0;height:100%;width:420px;max-width:92vw;z-index:201;transform:translateX(102%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+    background:linear-gradient(180deg,var(--panel),var(--panel2));border-left:1px solid var(--line);box-shadow:-20px 0 50px rgba(0,0,0,.5);overflow-y:auto;padding:22px}
+  .drawer.open{transform:translateX(0)}
+  .drawer .dclose{position:absolute;top:14px;right:16px;cursor:pointer;color:var(--muted);font-size:22px;background:none;border:none}
+  .drawer .dclose:hover{color:var(--tx)}
+  .drawer .dhead{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+  .drawer .dbadge{width:46px;height:46px;border-radius:11px;display:grid;place-items:center;font-size:20px;flex:none}
+  .drawer h3{margin:0;font-size:18px} .drawer .dsub{color:var(--muted);font-size:12px;font-family:'JetBrains Mono',monospace;margin-top:2px}
+  .drawer .dsec{margin-top:16px} .drawer .dsec .lab{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--cy);margin-bottom:5px;font-family:'JetBrains Mono',monospace}
+  .drawer .dsec p{margin:0;font-size:14px;line-height:1.55;color:#c8d3de}
+  .drawer .dres{border-radius:10px;padding:12px 14px;margin-top:16px;font-size:14px;line-height:1.5}
+  .drawer .dres.defendido{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3)}
+  .drawer .dres.hallazgo{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3)}
+  .drawer .dres.vulnerable{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3)}
+  .drawer .dres.planificado,.drawer .dres.manual{background:#0c1219;border:1px solid var(--line)}
+  .drawer pre{font-family:'JetBrains Mono',monospace;font-size:11.5px;line-height:1.5;background:#05090d;border:1px solid var(--line);border-radius:9px;padding:11px;white-space:pre-wrap;color:#b9c6d3;margin-top:8px}
+  .drawer .dtags{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
   footer{color:var(--muted);font-size:11px;text-align:center;margin-top:16px;font-family:'JetBrains Mono',monospace}
 </style>
 </head>
@@ -213,6 +233,9 @@
 
 <div class="panel" id="informe" style="display:none;margin-top:14px"></div>
 
+<div class="overlay" id="ov" onclick="cerrarDrawer()"></div>
+<aside class="drawer" id="drawer"><button class="dclose" onclick="cerrarDrawer()">✕</button><div id="drawer-body"></div></aside>
+
 <footer>DBB Labs · motor DBB-HACK · producción nunca se toca</footer>
 
 <script>
@@ -277,6 +300,39 @@ ox=fitCanvas(osc);rx=fitCanvas(radar);ax=fitCanvas(act);loop();
 
 const iconos={defendido:'🛡️',hallazgo:'⚠️',vulnerable:'🔴',corriendo:'⚡',planificado:'⏳',manual:'🔍'};
 const stTxt={defendido:'Defendido',hallazgo:'Hallazgo',vulnerable:'Vulnerable',corriendo:'Corriendo',planificado:'Planificado',manual:'Manual'};
+const EXPLICA={
+ S1:{que:"Busca contraseñas, llaves o tokens escritos por error en el código o en el historial de git.",riesgo:"Una llave filtrada es una puerta abierta: cualquiera con acceso al repo puede robarla y entrar a tus sistemas.",como:"Se escanean todos los archivos y los miles de commits del historial con gitleaks.",bien:"Que no aparezca ninguna: las llaves viven en variables de entorno, nunca en el código."},
+ S2:{que:"Revisa si las librerías que usa el proyecto tienen vulnerabilidades conocidas.",riesgo:"Una librería vulnerable es un agujero que tú no escribiste pero igual te afecta.",como:"npm audit compara tus dependencias contra bases de datos públicas de vulnerabilidades.",bien:"Cero vulnerabilidades conocidas (o actualizadas si aparecen)."},
+ S3:{que:"Lee el código buscando patrones peligrosos (inyección, mal uso de criptografía, etc.).",riesgo:"Errores de programación que abren agujeros, detectables antes de que alguien los explote.",como:"semgrep aplica cientos de reglas de seguridad sobre el código fuente.",bien:"Sin patrones inseguros detectados."},
+ A0:{que:"Un atacante SIN cuenta intenta leer tus datos o descargar archivos directo desde la API pública.",riesgo:"Es el ataque más común y grave: robar datos de clientes sin siquiera loguearse.",como:"Con la llave pública (que está en el navegador de cualquiera) se piden tablas y archivos privados.",bien:"La API no expone los datos sensibles y los archivos privados no se pueden bajar."},
+ A1:{que:"Un cliente logueado intenta ver los datos de OTRO cliente.",riesgo:"En una fintech, que un cliente vea el saldo o el RUT de otro es gravísimo.",como:"Se pide la ficha de otro cliente por su id, saltándose la pantalla.",bien:"La RLS de la base solo devuelve las filas propias; la de otro sale vacía."},
+ A2:{que:"Un cliente normal intenta ejecutar acciones que solo un operador debería (aprobar, pagar).",riesgo:"Si funciona, cualquier cliente podría mover dinero como si fuera del equipo.",como:"Se llama directo a las funciones de operador, saltándose la interfaz.",bien:"Las funciones verifican el rol y rechazan a quien no es operador (NOT_AN_OPERATOR)."},
+ A3:{que:"Un operador con permisos pero que NO confirmó su segundo factor intenta mover dinero.",riesgo:"El segundo factor es la última barrera; si se puede saltar, no sirve de nada.",como:"Se actúa como ese operador e intenta aprobar un movimiento de dinero.",bien:"El sistema exige el segundo factor confirmado para tocar dinero."},
+ A4:{que:"Un atacante finge un aviso de pago (de Mercado Pago) con una firma falsa.",riesgo:"Si cuela, podría abonarse plata que nunca llegó a la cuenta.",como:"Se envía un aviso de pago con una firma inventada a la URL del webhook.",bien:"La firma se valida contra el secreto; un aviso falso se rechaza con 401."},
+ A5:{que:"Intenta disparar los procesos automáticos de dinero (crons) sin el secreto.",riesgo:"Esos procesos mueven el ledger; no deben poder gatillarse desde afuera.",como:"Se llama a las URLs de los crons sin el token secreto.",bien:"Sin el secreto responden 404, sin revelar siquiera que la ruta existe."},
+ A6:{que:"Prueba muchas contraseñas seguidas para adivinar la de un usuario.",riesgo:"Sin freno, un atacante adivina contraseñas débiles por prueba y error.",como:"Se envían decenas de intentos de login muy rápido.",bien:"Un rate-limit debe bloquear tras varios intentos (hoy depende del borde: verificar en prod)."},
+ A7:{que:"Intenta que la API GraphQL revele el mapa completo de la base (introspección).",riesgo:"Ese mapa le da al atacante el plano de qué atacar.",como:"Se pide el esquema con una consulta de introspección, como anónimo.",bien:"GraphQL está apagado: no hay superficie que exponer."},
+ A8:{que:"Engaña a la app para que redirija al usuario a un sitio externo malicioso.",riesgo:"Se usa en phishing: el enlace parece tuyo pero termina en un sitio falso.",como:"Se pone una URL externa en el parámetro de retorno del login.",bien:"La app ignora destinos externos y solo redirige dentro del sitio."},
+ A9:{que:"Averigua si un correo está registrado observando la respuesta del login o el registro.",riesgo:"Permite armar listas de clientes reales para phishing dirigido.",como:"Se compara la respuesta con un correo real vs uno inexistente.",bien:"La respuesta es idéntica en ambos casos; no revela quién existe."},
+ A10:{que:"Revisa las cabeceras de seguridad que el navegador usa para proteger al usuario.",riesgo:"Sin ellas la app es más vulnerable a XSS, clickjacking y fuga de datos.",como:"Se leen las cabeceras de la respuesta HTTP de la app.",bien:"Deben estar CSP, HSTS, X-Frame-Options, etc. (hoy falta CSP → hallazgo)."}};
+function openDrawer(id){
+  const v=(CATALOGO||[]).find(x=>x.id===id)||{};
+  const a=(D.ataques||[]).find(x=>x.id===id)||{};
+  const e=EXPLICA[id];const est=a.estado||v.status||'planificado';
+  const ico={defendido:'🛡️',hallazgo:'⚠️',vulnerable:'🔴',corriendo:'⚡',planificado:'⏳',manual:'🔍'}[est]||'•';
+  const sec=(lab,txt)=>txt?`<div class="dsec"><div class="lab">${lab}</div><p>${txt}</p></div>`:'';
+  let body=`<div class="dhead"><div class="dbadge st-${est}" style="background:rgba(242,101,34,.12)">${ico}</div>
+    <div><h3>${id} · ${v.nombre||a.nombre||id}</h3><div class="dsub">${(v.capa||'').toUpperCase()} · OWASP ${v.owasp||a.owasp||'—'} · ISO ${v.iso||a.iso||'—'}</div></div></div>`;
+  if(e){body+=sec('¿Qué es?',e.que)+sec('¿Por qué importa?',e.riesgo)+sec('¿Cómo se ataca?',e.como)+sec('¿Qué se considera bien?',e.bien);}
+  else{body+=sec('Descripción',v.desc||a.detalle);}
+  if(a.estado){body+=`<div class="dres ${est}"><b>Resultado: ${stTxt[est]||est}</b><br>${a.detalle||''}</div>`;
+    if(a.recomendacion)body+=`<div class="dsec"><div class="lab">Recomendación</div><p>${a.recomendacion}</p></div>`;
+    if(a.prompt_fix)body+=`<div class="dsec"><div class="lab">Prompt de remediación</div><pre>${(a.prompt_fix||'').replace(/</g,'&lt;')}</pre></div>`;
+  } else if(v.status){body+=`<div class="dres ${v.status}"><b>${stTxt[v.status]||v.status}</b> — ${v.status==='planificado'?'vector en el catálogo, aún no implementado.':(v.status==='manual'?'requiere revisión guiada por un analista.':'')}</div>`;}
+  $('drawer-body').innerHTML=body;$('drawer').classList.add('open');$('ov').classList.add('open');
+}
+function cerrarDrawer(){$('drawer').classList.remove('open');$('ov').classList.remove('open');}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')cerrarDrawer();});
 function render(d){D=d;const done=d.estado==='completado';document.body.classList.toggle('done',done);
   const base=(d.modo||'DBB-HACK').replace(/\s*·\s*EN VIVO$/i,'');
   const mel=$('modo');mel.style.color='var(--muted)';
@@ -292,7 +348,7 @@ function render(d){D=d;const done=d.estado==='completado';document.body.classLis
     $('v-txt').textContent=d.veredicto;$('v-sub').textContent=`${d.kpis.defendidos}/${d.kpis.vectores} vectores defendidos · integridad ${g} · ${done?'run completado':'en curso'}`;}
   const sA=JSON.stringify((d.ataques||[]).map(a=>[a.id,a.estado,a.detalle]));
   if(sA!==sigAtk){sigAtk=sA;
-  $('atk').innerHTML=(d.ataques||[]).map(a=>`<div class="card st-${a.estado}" title="${((CATALOGO.find(v=>v.id===a.id)||{}).desc||a.detalle||'').replace(/"/g,'')}" style="cursor:help"><div class="badge">${iconos[a.estado]||'•'}</div>
+  $('atk').innerHTML=(d.ataques||[]).map(a=>`<div class="card st-${a.estado}" onclick="openDrawer('${a.id}')" title="Clic para ver la explicación completa" style="cursor:pointer"><div class="badge">${iconos[a.estado]||'•'}</div>
     <div style="flex:1;min-width:0"><div class="name">${a.id} · ${a.nombre}</div><div class="det">${a.detalle||''}</div>
     <div class="tags"><span class="tag">${a.categoria}</span><span class="tag">OWASP ${a.owasp}</span><span class="tag">ISO ${a.iso}</span></div></div>
     <div class="status-txt">${stTxt[a.estado]||a.estado}</div></div>`).join('');
@@ -399,7 +455,7 @@ async function toggleInforme(){const el=$('informe');
   el.scrollIntoView({behavior:'smooth'});}
 async function renderInforme(){const d=D||{};d.kpis=d.kpis||{vectores:0,defendidos:0,hallazgos:0,cobertura:0};d.severidades=d.severidades||{};d.ataques=d.ataques||[];const g=d.integridad||0;
   const DESC={};(CATALOGO||[]).forEach(v=>DESC[v.id]=v.desc||'');
-  const rows=(d.ataques||[]).map(a=>`<tr title="${(DESC[a.id]||a.detalle||'').replace(/"/g,'')}" style="cursor:help"><td>${a.id} <span style="color:var(--muted)">ⓘ</span></td><td>${a.nombre}</td><td>${a.categoria||''}</td><td>OWASP ${a.owasp||'—'} · ISO ${a.iso||'—'}</td><td class="status-txt st-${a.estado}" style="padding:7px 10px">${stTxt[a.estado]||a.estado}</td></tr>`).join('');
+  const rows=(d.ataques||[]).map(a=>`<tr onclick="openDrawer('${a.id}')" title="Clic para la explicación completa" style="cursor:pointer"><td>${a.id} <span style="color:var(--muted)">ⓘ</span></td><td>${a.nombre}</td><td>${a.categoria||''}</td><td>OWASP ${a.owasp||'—'} · ISO ${a.iso||'—'}</td><td class="status-txt st-${a.estado}" style="padding:7px 10px">${stTxt[a.estado]||a.estado}</td></tr>`).join('');
   const fs=(d.ataques||[]).filter(a=>a.estado==='hallazgo'||a.estado==='vulnerable');
   const finds=fs.length?fs.map(a=>{const sv=a.severidad||'media';return `<div class="find sev-${sv}" style="margin:8px 0"><div class="top"><span class="chip ${sv}">${sv}</span><span class="h3">${a.id} · ${a.nombre}</span></div><div class="det">${a.detalle||''}</div>${a.recomendacion?`<div class="rec"><b>Recomendación:</b> ${a.recomendacion}</div>`:''}${a.prompt_fix?`<div class="promptbox"><pre>${(a.prompt_fix||'').replace(/</g,'&lt;')}</pre></div>`:''}</div>`;}).join(''):'<div class="empty">Sin hallazgos: todas las defensas resistieron. 🛡️</div>';
   let hist='';try{const h=await(await fetch('historial.json?_='+Date.now())).json();
