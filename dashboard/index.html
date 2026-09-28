@@ -214,7 +214,7 @@
 
 <div class="cmd">
   <div class="panel"><h2><span class="live"></span>Osciloscopio · CPU real del lab</h2><canvas id="osc" class="viz" height="140"></canvas></div>
-  <div class="panel"><h2><span class="live"></span>Radar · contenedores del lab (real)</h2><canvas id="radar" class="viz" height="140"></canvas></div>
+  <div class="panel"><h2><span class="live"></span>Radar de postura · resultado por vector</h2><canvas id="radar" class="viz" height="140"></canvas></div>
   <div class="panel"><h2><span class="live"></span>Actividad de red · tráfico real</h2><canvas id="activity" class="viz" height="140"></canvas></div>
   <div class="panel"><h2>Integridad de defensa</h2>
     <div class="gauge-wrap"><div class="gauge">
@@ -287,29 +287,27 @@ function drawOsc(){const w=osc.clientWidth,h=140;ox.clearRect(0,0,w,h);
   const cur=s.length?s[s.length-1]:0;ox.fillStyle='#f26522';ox.font='600 13px "JetBrains Mono",monospace';ox.fillText('CPU '+cur.toFixed(1)+'% · real',10,18);}
 /* radar */
 const radar=$('radar');let rx=radar.getContext('2d'),sweep=0;
-function drawRadar(){const w=radar.clientWidth,h=140,cx=w/2,cy=h/2,R=Math.min(cx,cy)-6;rx.clearRect(0,0,w,h);
-  rx.strokeStyle='rgba(52,211,153,.18)';rx.lineWidth=1;
+function drawRadar(){const w=radar.clientWidth,h=140,cx=w/2,cy=h/2,R=Math.min(cx,cy)-8;rx.clearRect(0,0,w,h);
+  rx.strokeStyle='rgba(52,211,153,.14)';rx.lineWidth=1;
   for(let i=1;i<=3;i++){rx.beginPath();rx.arc(cx,cy,R*i/3,0,7);rx.stroke();}
   rx.beginPath();rx.moveTo(cx-R,cy);rx.lineTo(cx+R,cy);rx.moveTo(cx,cy-R);rx.lineTo(cx,cy+R);rx.stroke();
-  const g=rx.createRadialGradient(cx,cy,0,cx,cy,R);g.addColorStop(0,'rgba(242,101,34,.30)');g.addColorStop(1,'rgba(242,101,34,0)');
+  const g=rx.createRadialGradient(cx,cy,0,cx,cy,R);g.addColorStop(0,'rgba(242,101,34,.26)');g.addColorStop(1,'rgba(242,101,34,0)');
   rx.fillStyle=g;rx.beginPath();rx.moveTo(cx,cy);rx.arc(cx,cy,R,sweep,sweep+0.5);rx.closePath();rx.fill();
-  const cs=M.containers||[];const n=cs.length||1;const maxc=Math.max(1,Math.max(...cs.map(c=>c.cpu),0));
-  cs.forEach((c,i)=>{const ang=i/n*Math.PI*2;const rr=R*(0.30+0.6*(1-c.cpu/(maxc*1.3+1)));
+  // cada vector = un punto. color=resultado, distancia al centro=gravedad (defendido=perimetro seguro, vulnerable=centro/brecha)
+  const col={defendido:'#34d399',hallazgo:'#fbbf24',vulnerable:'#f87171',corriendo:'#f26522',planificado:'#3b4a5a',manual:'#60a5fa'};
+  const rad={defendido:0.9,manual:0.78,planificado:0.74,hallazgo:0.5,vulnerable:0.28,corriendo:0.6};
+  const at=D.ataques||[];const n=at.length||1;
+  at.forEach((a,i)=>{const ang=i/n*Math.PI*2-Math.PI/2;const rr=R*(rad[a.estado]??0.7);
     const bx=cx+Math.cos(ang)*rr,by=cy+Math.sin(ang)*rr;
-    const near=Math.abs((sweep%(Math.PI*2))-((ang+Math.PI*2)%(Math.PI*2)));const flash=near<0.4||Math.abs(near-Math.PI*2)<0.4;
-    const size=3+Math.min(8,c.cpu*1.4);rx.fillStyle=c.cpu>4?'#fbbf24':'#34d399';rx.shadowBlur=flash?16:6;rx.shadowColor=rx.fillStyle;
-    rx.beginPath();rx.arc(bx,by,flash?size+2:size,0,7);rx.fill();rx.shadowBlur=0;
-    if(flash){rx.fillStyle='#cfe';rx.font='9px "JetBrains Mono",monospace';rx.fillText(c.name.slice(0,10),bx+8,by+3);}});
-  // haces de ataque: cuando hay un vector corriendo, golpea contenedores
-  const atacando=(D.ataques||[]).some(a=>a.estado==='corriendo');
-  if(atacando&&cs.length){const now=performance.now()/1000;
-    for(let k=0;k<3;k++){const idx=Math.floor(Math.abs(Math.sin(now*0.4+k*2))*cs.length)%cs.length;
-      const ang=idx/n*Math.PI*2;const rr=R*(0.30+0.6*(1-cs[idx].cpu/(maxc*1.3+1)));
-      const bx=cx+Math.cos(ang)*rr,by=cy+Math.sin(ang)*rr;
-      rx.strokeStyle='rgba(248,113,113,.45)';rx.lineWidth=1.4;rx.beginPath();rx.moveTo(cx,cy);rx.lineTo(bx,by);rx.stroke();
-      const p=(now*0.6+k*0.33)%1,px=cx+(bx-cx)*p,py=cy+(by-cy)*p;
-      rx.fillStyle='#f87171';rx.shadowBlur=12;rx.shadowColor='#f87171';rx.beginPath();rx.arc(px,py,3,0,7);rx.fill();rx.shadowBlur=0;}}
-  rx.fillStyle='#728294';rx.font='10px "JetBrains Mono",monospace';rx.fillText((M.n||0)+' contenedores · real'+(atacando?' · ⚡ bajo ataque':''),8,14);
+    const dif=Math.abs((sweep%(Math.PI*2))-(((ang+Math.PI/2)+Math.PI*2)%(Math.PI*2)));const glow=dif<0.4||Math.abs(dif-Math.PI*2)<0.4;
+    const run=a.estado==='corriendo';
+    if(run){rx.strokeStyle='rgba(242,101,34,.55)';rx.lineWidth=1.4;rx.beginPath();rx.moveTo(cx,cy);rx.lineTo(bx,by);rx.stroke();}
+    rx.fillStyle=col[a.estado]||'#728294';rx.shadowBlur=(glow||run)?15:6;rx.shadowColor=rx.fillStyle;
+    rx.beginPath();rx.arc(bx,by,(glow||run)?6:4,0,7);rx.fill();rx.shadowBlur=0;
+    if(glow){rx.fillStyle='#cfe';rx.font='9px "JetBrains Mono",monospace';rx.fillText(a.id,bx+7,by+3);}});
+  const def=at.filter(a=>a.estado==='defendido').length;
+  rx.fillStyle='#728294';rx.font='9px "JetBrains Mono",monospace';rx.textAlign='center';
+  rx.fillText(at.length?def+'/'+at.length+' \u2713':'sin corrida',cx,cy+3);rx.textAlign='left';
   sweep+=0.028;}
 /* actividad */
 const act=$('activity');let ax=act.getContext('2d'),series=[];
