@@ -39,13 +39,21 @@ def main():
         d["eventos"].append({"hora":hora(),"tipo":a[1],"texto":a[2]})
     elif cmd=="ataque":
         aid,est,nombre,cat,owasp,iso,det=a[1],a[2],a[3],a[4],a[5],a[6],a[7]
+        # opcionales: severidad, recomendacion, prompt_fix
+        sev=a[8] if len(a)>8 else None
+        rec=a[9] if len(a)>9 else None
+        pfix=a[10] if len(a)>10 else None
+        reg={"id":aid,"nombre":nombre,"categoria":cat,"owasp":owasp,"iso":iso,"estado":est,"detalle":det}
+        if sev: reg["severidad"]=sev
+        if rec: reg["recomendacion"]=rec
+        if pfix: reg["prompt_fix"]=pfix
         found=False
         for x in d["ataques"]:
-            if x["id"]==aid:
-                x.update({"estado":est,"nombre":nombre,"categoria":cat,"owasp":owasp,"iso":iso,"detalle":det}); found=True
-        if not found:
-            d["ataques"].append({"id":aid,"nombre":nombre,"categoria":cat,"owasp":owasp,"iso":iso,"estado":est,"detalle":det})
+            if x["id"]==aid: x.update(reg); found=True
+        if not found: d["ataques"].append(reg)
         d["eventos"].append({"hora":hora(),"tipo":est if est in("defendido","hallazgo","vulnerable") else "ataque","texto":f"{aid} {nombre}: {det}"})
+    elif cmd=="veredicto":
+        d["veredicto"]=a[1]
     elif cmd=="kpi":
         d["kpis"]={"vectores":int(a[1]),"defendidos":int(a[2]),"hallazgos":int(a[3]),"cobertura":int(a[4])}
         d["integridad"]=int(a[5])
