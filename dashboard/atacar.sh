@@ -19,13 +19,15 @@ IDB="$(echo "select id from app.client_profile order by created_at offset 1 limi
 IDO="$(echo "select id from app.operator_profile where not is_system and mfa_enrolled_at is null limit 1;" | run_sql)"
 
 em init "$OBJ" "Next.js + Supabase" "DBB-HACK · nivel ${NIVEL} · EN VIVO"
+if [ "$VEC" = "all" ]; then TOT=14; else TOT=$(echo "$VEC" | tr ',' '\n' | grep -cE '^(S1|S2|S3|A0|A1|A2|A3|A4|A5|A6|A7|A8|A9|A10)$'); fi
+em meta "$TOT"
 em evento info "Ataque iniciado contra $OBJ (lab local aislado)"
 nd=0; nh=0; nv=0
 
 vec(){ # id nombre cat owasp iso  ; luego el bloque de ataque via stdin decide estado
   em ataque "$1" corriendo "$2" "$3" "$4" "$5" "preparando..."; sleep 2; }
-res(){ # id estado nombre cat owasp iso detalle
-  em ataque "$1" "$2" "$3" "$4" "$5" "$6" "$7"
+res(){ # id estado nombre cat owasp iso detalle [sev] [recomendacion] [prompt_fix]
+  em ataque "$1" "$2" "$3" "$4" "$5" "$6" "$7" "${8:-}" "${9:-}" "${10:-}"
   case "$2" in defendido) nd=$((nd+1));; hallazgo) nh=$((nh+1));; vulnerable) nv=$((nv+1));; esac
   em kpi $((nd+nh+nv)) $nd $nh 60 $([ $nv -gt 0 ] && echo 55 || { [ $nh -gt 0 ] && echo 85 || echo 95; }); sleep 2; }
 
@@ -62,7 +64,7 @@ fi
 if want A6; then vec A6 "Fuerza bruta de login" "Anti-automacion" "API4" "A.8.5"
   em evento ataque "A6 15 intentos de login fallidos rapidos..."
   ok=0; for i in $(seq 1 15); do c=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$API/auth/v1/token?grant_type=password" -H "apikey: $ANON" -H "Content-Type: application/json" -d "{\"email\":\"e2e-titular@e2e.kapa21.cl\",\"password\":\"x$i\"}"); [ "$c" = "429" ] && ok=1; done
-  [ "$ok" = "1" ] && res A6 defendido "Fuerza bruta de login" "Anti-automacion" "API4" "A.8.5" "rate-limit activo (429)" || res A6 hallazgo "Fuerza bruta de login" "Anti-automacion" "API4" "A.8.5" "sin freno local; verificar borde en prod"
+  [ "$ok" = "1" ] && res A6 defendido "Fuerza bruta de login" "Anti-automacion" "API4" "A.8.5" "rate-limit activo (429)" || res A6 hallazgo "Fuerza bruta de login" "Anti-automacion" "API4" "A.8.5" "sin freno local; verificar borde en prod" "media" "Verificar en produccion: regla de rate-limit en Vercel Firewall para /acceso y el endpoint de auth; rate-limits de Supabase Auth activos; idealmente captcha en el login." "Contexto: DBB-HACK detecto que la proteccion contra fuerza bruta depende solo del borde y el limitador propio (features/auth/lib/limite.ts) es por cookie y evitable, y no cubre /auth/v1/token de Supabase. Tarea: (1) habilitar rate-limit en Vercel Firewall para /acceso y auth; (2) verificar/ajustar rate-limits de Supabase Auth en produccion; (3) evaluar captcha (hCaptcha/Turnstile); (4) definir [auth.rate_limit] en supabase/config.toml. Listo cuando 20 intentos fallidos contra /auth/v1/token reciban 429 y el login legitimo siga funcionando."
 fi
 
 # ───── LOW / estáticos (sobre el repo) ─────
@@ -101,7 +103,7 @@ fi
 if want A10; then vec A10 "Cabeceras de seguridad" "Config" "API8" "A.8.26"
   em evento ataque "A10 revisando cabeceras de seguridad..."
   H=$(curl -s -D - -o /dev/null "$APP/acceso")
-  echo "$H" | grep -qi "content-security-policy" && res A10 defendido "Cabeceras de seguridad" "Config" "API8" "A.8.26" "CSP y cabeceras presentes" || res A10 hallazgo "Cabeceras de seguridad" "Config" "API8" "A.8.26" "falta CSP (agregar en next.config/headers)"
+  echo "$H" | grep -qi "content-security-policy" && res A10 defendido "Cabeceras de seguridad" "Config" "API8" "A.8.26" "CSP y cabeceras presentes" || res A10 hallazgo "Cabeceras de seguridad" "Config" "API8" "A.8.26" "falta Content-Security-Policy" "media" "Agregar Content-Security-Policy (y HSTS) en next.config.ts, seccion async headers()." "Contexto: la app no envia la cabecera Content-Security-Policy (si tiene X-Frame-Options, X-Content-Type-Options, Referrer-Policy y Permissions-Policy). Tarea: agregar en next.config.ts async headers() una CSP restrictiva que permita solo origenes propios + Supabase (127.0.0.1:54321 en dev / el dominio en prod) + Mercado Pago, y agregar Strict-Transport-Security. Listo cuando la respuesta de /acceso incluya Content-Security-Policy y securityheaders.com de nota A."
 fi
 # ───── BAMF / MID planificados: se muestran, no se falsean ─────
 for pv in M1 M2 B1 B2 B3 B4 B5 B6 B7 B8 B9 B10 B11 B12 B13 B14 B15 B16; do

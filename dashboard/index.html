@@ -74,7 +74,7 @@
   .gauge-wrap{display:flex;flex-direction:column;align-items:center;margin:6px 0}
   .gauge{position:relative;width:180px;height:104px}
   .gauge .val{position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:34px;font-weight:700;font-family:'JetBrains Mono',monospace}
-  .feed{font-family:'JetBrains Mono',monospace;font-size:12px;height:150px;overflow-y:auto;display:flex;flex-direction:column;gap:5px}
+  .feed{font-family:'JetBrains Mono',monospace;font-size:12.5px;height:360px;overflow-y:auto;display:flex;flex-direction:column;gap:5px}
   .ev{display:flex;gap:9px;padding:4px 7px;border-radius:6px;border-left:2px solid var(--line);background:#070d13;animation:slidein .4s ease}
   @keyframes slidein{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}
   .ev .h{color:var(--muted);white-space:nowrap}
@@ -176,6 +176,12 @@
     <button class="btn" style="font-size:13px;padding:11px 14px" onclick="limpiar()">🗑 Limpiar</button>
   </div>
   <div id="c-msg" style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--cy)"></div>
+  <div id="prog-wrap" style="display:none;margin-top:10px">
+    <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:4px">
+      <span id="prog-lbl">Progreso</span><span id="prog-pct">0%</span></div>
+    <div style="height:10px;background:#0a1017;border:1px solid var(--line);border-radius:6px;overflow:hidden">
+      <div id="prog-fill" style="height:100%;width:0%;background:linear-gradient(90deg,var(--cy),var(--mg));transition:width .5s ease;box-shadow:0 0 12px var(--cy)"></div></div>
+  </div>
 </div>
 
 <div class="panel" style="margin-bottom:10px;display:flex;gap:20px;align-items:center;flex-wrap:wrap">
@@ -225,8 +231,8 @@
 <div class="grid">
   <div class="panel"><h2><span class="live"></span>Matriz de ataque</h2><div class="atk" id="atk"></div></div>
   <div>
-    <div class="panel" style="margin-bottom:10px"><h2>Severidad</h2><canvas id="donut" height="170"></canvas></div>
-    <div class="panel"><h2><span class="live"></span>Feed</h2><div class="feed" id="feed"></div></div>
+    <div class="panel" style="margin-bottom:10px"><h2><span class="live"></span>Feed de la corrida</h2><div class="feed" id="feed"></div></div>
+    <div class="panel"><h2>Severidad de hallazgos</h2><canvas id="donut" height="150"></canvas></div>
   </div>
 </div>
 
@@ -247,9 +253,14 @@ let M={serie_cpu:[],serie_net:[],containers:[],totales:{cpu:0,mem_mib:0,rx_rate_
 function countTo(el,to){const from=kAnim[el.id]||0;kAnim[el.id]=to;const t0=performance.now(),d=700;
   (function s(t){const p=Math.min(1,(t-t0)/d);el.childNodes[0].nodeValue=Math.round(from+(to-from)*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(s);})(performance.now());}
 function fitCanvas(c){const r=c.getBoundingClientRect();const dpr=devicePixelRatio||1;c.width=r.width*dpr;c.height=c.height*dpr;const x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);return x;}
-function mkDonut(s){const data=[s.critica,s.alta,s.media,s.baja];if(donut){donut.data.datasets[0].data=data;donut.update('none');return;}
-  donut=new Chart($('donut'),{type:'doughnut',data:{labels:['Crítica','Alta','Media','Baja'],datasets:[{data,backgroundColor:['#f87171','#fb923c','#fbbf24','#60a5fa'],borderColor:'#0d141c',borderWidth:3}]},
-    options:{cutout:'66%',plugins:{legend:{position:'bottom',labels:{color:'#728294',font:{size:11},boxWidth:10}}}}});}
+function mkDonut(s){const tot=(s.critica||0)+(s.alta||0)+(s.media||0)+(s.baja||0);
+  const data=tot?[s.critica,s.alta,s.media,s.baja]:[1];
+  const labels=tot?['Crítica','Alta','Media','Baja']:['Sin hallazgos'];
+  const colors=tot?['#f87171','#fb923c','#fbbf24','#60a5fa']:['#34d399'];
+  if(donut){donut.data.labels=labels;donut.data.datasets[0].data=data;donut.data.datasets[0].backgroundColor=colors;donut.update('none');}
+  else donut=new Chart($('donut'),{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors,borderColor:'#0d141c',borderWidth:3}]},
+    options:{cutout:'66%',plugins:{legend:{position:'bottom',labels:{color:'#728294',font:{size:11},boxWidth:10}},tooltip:{enabled:tot>0}}}});
+  const c=$('donut-c');if(c)c.textContent=tot?tot+(tot===1?' hallazgo':' hallazgos'):'✓ 0';}
 /* osciloscopio */
 const osc=$('osc');let ox=osc.getContext('2d'),oscPhase=0;
 function drawOsc(){const w=osc.clientWidth,h=180;ox.clearRect(0,0,w,h);
@@ -350,7 +361,7 @@ function openDrawer(id){
   else{body+=sec('Descripción',v.desc||a.detalle);}
   if(a.estado){body+=`<div class="dres ${est}"><b>Resultado: ${stTxt[est]||est}</b><br>${a.detalle||''}</div>`;
     if(a.recomendacion)body+=`<div class="dsec"><div class="lab">Recomendación</div><p>${a.recomendacion}</p></div>`;
-    if(a.prompt_fix)body+=`<div class="dsec"><div class="lab">Prompt de remediación</div><pre>${(a.prompt_fix||'').replace(/</g,'&lt;')}</pre></div>`;
+    if(a.prompt_fix){window.__prompt=a.prompt_fix;body+=`<div class="dsec"><div class="lab">Prompt de remediación <button class="btn" style="padding:4px 10px;font-size:11px;margin-left:6px" onclick="copiarPrompt(this)">📋 Copiar</button></div><pre>${(a.prompt_fix||'').replace(/</g,'&lt;')}</pre></div>`;}
   } else if(v.status){body+=`<div class="dres ${v.status}"><b>${stTxt[v.status]||v.status}</b> — ${v.status==='planificado'?'vector en el catálogo, aún no implementado.':(v.status==='manual'?'requiere revisión guiada por un analista.':'')}</div>`;}
   $('drawer-body').innerHTML=body;$('drawer').classList.add('open');$('ov').classList.add('open');
 }
@@ -362,9 +373,16 @@ function render(d){D=d;const done=d.estado==='completado';document.body.classLis
   mel.textContent=base+' · '+(done?'✓ COMPLETADO':(d.ataques&&d.ataques.some(a=>a.estado==='corriendo')?'⚡ EN CURSO':'· listo'));
   $('objetivo').textContent=d.objetivo||'—';$('stack').textContent=d.stack||'';
   $('estadoLbl').textContent=done?'✓ COMPLETADO':'EN VIVO';
+  // barra de progreso
+  const pw=$('prog-wrap'),tot=d.total||0,ejec=(d.ataques||[]).filter(a=>a.estado!=='corriendo').length;
+  if(tot>0){pw.style.display='block';const pct=done?100:Math.min(100,Math.round(ejec/tot*100));
+    $('prog-fill').style.width=pct+'%';$('prog-pct').textContent=pct+'%';
+    $('prog-lbl').textContent=done?'✓ Ataque finalizado':('⚡ Atacando… '+ejec+'/'+tot+' vectores');}
+  else pw.style.display='none';
   countTo($('k-vec'),d.kpis.vectores);countTo($('k-def'),d.kpis.defendidos);countTo($('k-hal'),d.kpis.hallazgos);countTo($('k-cob'),d.kpis.cobertura);
   const g=Math.max(0,Math.min(100,d.integridad||0));$('gaugeArc').style.strokeDashoffset=251-251*g/100;$('gaugeVal').textContent=g;$('gaugeVal').style.color=g>=80?'var(--gr)':g>=50?'var(--am)':'var(--rd)';
-  mkDonut(d.severidades||{critica:0,alta:0,media:0,baja:0});
+  const sev={critica:0,alta:0,media:0,baja:0};(d.ataques||[]).forEach(a=>{if(a.estado==='hallazgo'||a.estado==='vulnerable'){const k=a.severidad||'media';sev[k]=(sev[k]||0)+1;}});
+  mkDonut(sev);
   // verdict
   if(d.veredicto){$('verdict').style.display='flex';const crit=(d.severidades&&(d.severidades.critica||d.severidades.alta))>0;
     $('v-ico').textContent=crit?'🔴':(d.kpis.hallazgos>0?'🛡️':'✅');
@@ -386,17 +404,17 @@ function render(d){D=d;const done=d.estado==='completado';document.body.classLis
   $('find-h').textContent=`Hallazgos y remediación (${fs.length})`;
   const sF=JSON.stringify(fs.map(a=>[a.id,a.estado,a.severidad]));
   if(sF!==sigFinds){sigFinds=sF;
-  $('finds').innerHTML=fs.length?fs.map((a,i)=>{const sv=a.severidad||'media';
-    return `<div class="find sev-${sv}"><div class="top"><span class="chip ${sv}">${sv}</span><span class="h3">${a.id} · ${a.nombre}</span>
-      <span class="tag">OWASP ${a.owasp}</span><span class="tag">ISO ${a.iso}</span></div>
+  $('finds').innerHTML=fs.length?fs.map((a)=>{const sv=a.severidad||'media';
+    return `<div class="find sev-${sv}" onclick="openDrawer('${a.id}')" style="cursor:pointer">
+      <div class="top"><span class="chip ${sv}">${sv}</span><span class="h3">${a.id} · ${a.nombre}</span>
+      <span class="tag">OWASP ${a.owasp}</span><span class="tag">ISO ${a.iso}</span>
+      <span style="margin-left:auto;color:var(--cy);font-size:12px;font-family:'JetBrains Mono',monospace">ver detalle + prompt →</span></div>
       <div class="det">${a.detalle||''}</div>
       ${a.recomendacion?`<div class="rec"><b>Recomendación:</b> ${a.recomendacion}</div>`:''}
-      ${a.prompt_fix?`<div class="promptbox"><button class="btn copybtn" onclick='copiar(${i})'>📋 Copiar prompt</button><pre id="pf${i}">${a.prompt_fix.replace(/</g,'&lt;')}</pre></div>`:''}
     </div>`;}).join(''):'<div class="empty">Sin hallazgos: todas las defensas resistieron. 🛡️</div>';}
   window.__fs=fs;
 }
-function copiar(i){const t=(window.__fs[i]||{}).prompt_fix||'';navigator.clipboard.writeText(t).then(()=>{
-  const b=event.target;b.textContent='✓ Copiado';setTimeout(()=>b.textContent='📋 Copiar prompt',1500);});}
+function copiarPrompt(b){const t=window.__prompt||'';navigator.clipboard.writeText(t).then(()=>{b.textContent='✓ Copiado';setTimeout(()=>b.textContent='📋 Copiar',1500);}).catch(()=>{b.textContent='⚠️ copia manual';});}
 function descargarJSON(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(D,null,2)],{type:'application/json'}));a.download=`dbb-hack_${D.objetivo}.json`;a.click();}
 function exportar(){
   const d=D,g=d.integridad||0;
@@ -535,11 +553,11 @@ function renderMetrics(){const t=M.totales||{};
 }
 function fmtmb(v){v=v||0;return v>=1024?(v/1024).toFixed(1)+'GB':v>=1?v.toFixed(1)+'MB':Math.round(v*1024)+'KB';}
 let lastLog=0;
-async function renderLogs(){try{const r=await fetch('logs.json?_='+Date.now());const ls=(await r.json()).lineas||[];
-  if(ls.length!==lastLog){lastLog=ls.length;const f=$('logfeed');
-    f.innerHTML=ls.map(l=>`<div class="logline ${l.sev}"><span class="lh">${l.hora}</span><span class="lc">${l.cont}</span><span class="lm">${(l.msg||'').replace(/</g,'&lt;')}</span></div>`).join('');
-    f.scrollTop=f.scrollHeight;}
-}catch(e){}}
+async function renderLogs(){const f=$('logfeed');if(!f)return;
+  let ls=[];try{ls=(await(await fetch('logs.json?_='+Date.now())).json()).lineas||[];}catch(e){f.innerHTML='<div class="logline">esperando el colector… (bash dashboard/servir.sh)</div>';return;}
+  if(!ls.length){f.innerHTML='<div class="logline">sin logs todavía…</div>';return;}
+  f.innerHTML=ls.map(l=>`<div class="logline ${l.sev||'info'}"><span class="lh">${l.hora||''}</span><span class="lc">${l.cont||''}</span><span class="lm">${(l.msg||'').replace(/</g,'&lt;')}</span></div>`).join('');
+  if(ls.length!==lastLog){f.scrollTop=f.scrollHeight;lastLog=ls.length;}}
 tick();setInterval(tick,1000);
 </script>
 </body>

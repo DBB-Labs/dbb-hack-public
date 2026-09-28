@@ -54,6 +54,8 @@ def main():
         d["eventos"].append({"hora":hora(),"tipo":est if est in("defendido","hallazgo","vulnerable") else "ataque","texto":f"{aid} {nombre}: {det}"})
     elif cmd=="veredicto":
         d["veredicto"]=a[1]
+    elif cmd=="meta":
+        d["total"]=int(a[1])
     elif cmd=="kpi":
         d["kpis"]={"vectores":int(a[1]),"defendidos":int(a[2]),"hallazgos":int(a[3]),"cobertura":int(a[4])}
         d["integridad"]=int(a[5])
