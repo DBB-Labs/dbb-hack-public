@@ -165,7 +165,7 @@
   <h2>Panel de control · seleccionar y lanzar</h2>
   <div style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap">
     <label style="font-size:12px;color:var(--muted)">Objetivo<br>
-      <input id="c-obj" value="kapa21-v2" style="margin-top:4px;background:#0a1017;border:1px solid var(--line);color:var(--tx);border-radius:8px;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:13px;width:180px"></label>
+      <select id="c-obj" style="margin-top:4px;background:#0a1017;border:1px solid var(--line);color:var(--tx);border-radius:8px;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:13px;min-width:200px"><option value="kapa21-v2">kapa21-v2</option></select></label>
     <label style="font-size:12px;color:var(--muted)">Nivel<br>
       <select id="c-niv" style="margin-top:4px;background:#0a1017;border:1px solid var(--line);color:var(--tx);border-radius:8px;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:13px">
         <option value="low">LOW HACK</option><option value="mid">MID HACK</option>
@@ -455,9 +455,12 @@ function pintarVectores(){const box=document.getElementById('c-vecs');if(!box)re
     html+='</div>';});
   box.innerHTML=html;
 }
-document.addEventListener('DOMContentLoaded',()=>{cargarCatalogo();
+async function cargarProyectos(){try{const r=await fetch('/api/proyectos');const ps=await r.json();const sel=$('c-obj');if(!sel||!ps.length)return;
+  sel.innerHTML=ps.map(p=>`<option value="${p.nombre}">${p.nombre}${p.vivo?' ⚡ (lab en vivo)':(p.supabase?' · estático':' · repo')}</option>`).join('');
+  sel.value='kapa21-v2';}catch(e){}}
+document.addEventListener('DOMContentLoaded',()=>{cargarCatalogo();cargarProyectos();
   const sel=document.getElementById('c-niv');if(sel)sel.addEventListener('change',pintarVectores);});
-cargarCatalogo();
+cargarCatalogo();cargarProyectos();
 async function lanzar(){
   const obj=(document.getElementById('c-obj').value||'kapa21-v2').trim();
   const niv=document.getElementById('c-niv').value;

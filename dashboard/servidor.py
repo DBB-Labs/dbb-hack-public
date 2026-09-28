@@ -13,6 +13,23 @@ class H(SimpleHTTPRequestHandler):
     def end_headers(self):
         self.send_header("Cache-Control","no-store"); super().end_headers()
     def log_message(self,*a): pass
+    def do_GET(self):
+        if self.path.split("?")[0]=="/api/proyectos":
+            base=os.path.expanduser("~/Documents/Proyectos")
+            out=[]
+            try:
+                for n in sorted(os.listdir(base)):
+                    d=os.path.join(base,n)
+                    if not os.path.isdir(d): continue
+                    sup=os.path.isfile(os.path.join(d,"supabase","config.toml"))
+                    pkg=os.path.isfile(os.path.join(d,"package.json"))
+                    if sup or pkg:
+                        out.append({"nombre":n,"supabase":sup,"repo":pkg,
+                                    "vivo":n=="kapa21-v2"})  # por ahora solo kapa21 tiene lab en vivo
+            except Exception: pass
+            self.send_response(200);self.send_header("Content-Type","application/json");self.end_headers()
+            self.wfile.write(json.dumps(out).encode());return
+        return super().do_GET()
     def do_POST(self):
         path=self.path.split("?")[0]
         if path not in ("/api/lanzar","/api/limpiar"):
