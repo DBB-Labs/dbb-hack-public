@@ -126,7 +126,8 @@
   </div>
   <div class="hd-right">
     <div class="actions">
-      <button class="btn primary" onclick="exportar()">⬇ Exportar informe</button>
+      <button class="btn" onclick="toggleInforme()">📄 Informe</button>
+      <button class="btn primary" onclick="exportar()">⬇ Exportar PDF</button>
       <button class="btn" onclick="descargarJSON()">⬇ Datos</button>
     </div>
     <div class="target"><span class="t" id="objetivo">—</span> · <span class="s" id="stack">—</span>
@@ -208,6 +209,8 @@
 </div>
 
 <div class="panel" style="margin-top:14px"><h2 id="find-h">Hallazgos y remediación</h2><div id="finds"></div></div>
+
+<div class="panel" id="informe" style="display:none;margin-top:14px"></div>
 
 <footer>DBB Labs · motor DBB-HACK · producción nunca se toca</footer>
 
@@ -385,6 +388,28 @@ async function lanzar(){
     const d=await r.json();msg.textContent=d.ok?('✅ Ataque en curso ('+d.vectores+') — mira el radar y el feed.'):'Error al lanzar.';
     lastCount=0;sigAtk='';sigFinds='';
   }catch(e){msg.style.color='var(--rd)';msg.textContent='🔴 Sin servidor de control. Arranca: bash dashboard/servir.sh';}
+}
+async function toggleInforme(){const el=$('informe');
+  if(el.style.display==='none'){await renderInforme();el.style.display='block';el.scrollIntoView({behavior:'smooth'});}
+  else el.style.display='none';}
+async function renderInforme(){const d=D,g=d.integridad||0;
+  const rows=(d.ataques||[]).map(a=>`<tr><td>${a.id}</td><td>${a.nombre}</td><td>${a.categoria||''}</td><td>OWASP ${a.owasp||'—'} · ISO ${a.iso||'—'}</td><td class="status-txt st-${a.estado}" style="padding:7px 10px">${stTxt[a.estado]||a.estado}</td></tr>`).join('');
+  const fs=(d.ataques||[]).filter(a=>a.estado==='hallazgo'||a.estado==='vulnerable');
+  const finds=fs.length?fs.map(a=>{const sv=a.severidad||'media';return `<div class="find sev-${sv}" style="margin:8px 0"><div class="top"><span class="chip ${sv}">${sv}</span><span class="h3">${a.id} · ${a.nombre}</span></div><div class="det">${a.detalle||''}</div>${a.recomendacion?`<div class="rec"><b>Recomendación:</b> ${a.recomendacion}</div>`:''}${a.prompt_fix?`<div class="promptbox"><pre>${(a.prompt_fix||'').replace(/</g,'&lt;')}</pre></div>`:''}</div>`;}).join(''):'<div class="empty">Sin hallazgos: todas las defensas resistieron. 🛡️</div>';
+  let hist='';try{const h=await(await fetch('historial.json?_='+Date.now())).json();
+    if(h&&h.length){hist=`<h2 style="margin-top:16px">Comparativo con corridas anteriores</h2><table class="stats"><thead><tr><th>Fecha</th><th>Tipo</th><th>Vectores</th><th>Defendidos</th><th>Hallazgos</th><th>Integridad</th></tr></thead><tbody>`+
+      h.slice(-6).map(x=>`<tr><td>${x.fecha}</td><td>${x.tipo}</td><td>${x.vectores}</td><td>${x.defendidos}</td><td>${x.hallazgos}</td><td>${x.integridad}</td></tr>`).join('')+`</tbody></table>`;}}catch(e){}
+  $('informe').innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+      <h2 style="margin:0">📄 Informe DBB Labs · ${d.objetivo||''}</h2>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)">${d.stack||''} · ${new Date().toLocaleString('es-CL')}</span></div>
+    <div class="verdict" style="margin:12px 0"><div class="ico">${(d.severidades&&(d.severidades.critica||d.severidades.alta))?'🔴':(d.kpis.hallazgos>0?'🛡️':'✅')}</div>
+      <div class="txt"><b>${d.veredicto||'—'}</b><div>${d.kpis.defendidos}/${d.kpis.vectores} defendidos · integridad ${g} · cobertura ${d.kpis.cobertura}%</div></div></div>
+    <h2>Matriz de resultados</h2>
+    <div style="overflow-x:auto"><table class="stats"><thead><tr><th>ID</th><th>Vector</th><th>Categoría</th><th>Mapeo</th><th>Resultado</th></tr></thead><tbody>${rows}</tbody></table></div>
+    <h2 style="margin-top:16px">Hallazgos y remediación</h2>${finds}
+    ${hist}
+    <div style="margin-top:14px;color:var(--muted);font-size:11px;font-family:'JetBrains Mono',monospace">Generado por DBB Labs · motor DBB-HACK · laboratorio aislado, producción no fue tocada.</div>`;
 }
 async function tick(){
   try{const r=await fetch('estado.json?_='+Date.now());render(await r.json());}
