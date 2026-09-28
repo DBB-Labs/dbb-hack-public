@@ -4,3 +4,4 @@ playwright-report/
 .playwright/
 dashboard/metricas.json
 dashboard/logs.json
+dashboard/conocimiento.json
