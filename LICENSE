@@ -1,56 +1,110 @@
-DBB-HACK — Licencia propietaria / Todos los derechos reservados
+DBB-HACK — CONTRATO DE LICENCIA DE SOFTWARE PROPIETARIO
 Copyright (c) 2026 Felipe Córdova · DBB Labs. Todos los derechos reservados.
 
-================================================================================
-1. TITULARIDAD Y COPYRIGHT EXCLUSIVO
-================================================================================
-Este software (código fuente, la consola "DBB Labs", scripts, documentación y
-demás materiales originales, en adelante "el Software") es una obra bajo
-copyright exclusivo de DBB Labs. Conforme a la práctica estándar (ver
-https://choosealicense.com/no-permission/), NO se concede ninguna licencia:
-por defecto, la obra queda bajo derechos de autor exclusivos de su titular.
+Base: guía "No License / All Rights Reserved" de https://choosealicense.com/no-permission/
+(código bajo copyright exclusivo por defecto), complementada con la legislación de la
+República de Chile. Este documento es la licencia completa del Software.
 
-En Chile, el Software está protegido como programa computacional por la
-Ley N° 17.336 sobre Propiedad Intelectual (art. 3 N° 16). Ningún tercero puede
-usar, copiar, ejecutar, reproducir, distribuir, comunicar públicamente,
-adaptar, transformar ni crear obras derivadas del Software, en todo o en parte,
-sin autorización escrita y previa de DBB Labs. La ausencia de autorización
-expresa significa que NO hay permiso.
+--------------------------------------------------------------------------------
+1. DEFINICIONES
+--------------------------------------------------------------------------------
+1.1 "Titular": Felipe Córdova / DBB Labs, autor y dueño de los derechos.
+1.2 "Software": el código fuente y objeto, la consola "DBB Labs", scripts
+    (montar-lab.sh, atacar.sh, lanzar.sh, colector.py, emitir.py, servidor.py),
+    catálogos, playbooks, documentación y todo material original de este repositorio,
+    salvo los Componentes de Terceros de la cláusula 7.
+1.3 "Usted": la persona o entidad que accede, posee o ejecuta el Software.
+1.4 "Sistema Objetivo": la aplicación o infraestructura sobre la que se ejecutan las
+    pruebas de seguridad del Software.
 
-================================================================================
-2. USO AUTORIZADO Y RESPONSABILIDAD (HERRAMIENTA DE SEGURIDAD OFENSIVA)
-================================================================================
-El Software realiza pruebas de intrusión (ataques reales) en un laboratorio
-aislado. Su uso queda autorizado ÚNICAMENTE sobre:
-  (a) sistemas de titularidad de quien lo ejecuta, o
-  (b) sistemas para los que se cuente con autorización escrita, expresa y
-      vigente del titular del sistema objetivo.
+--------------------------------------------------------------------------------
+2. TITULARIDAD Y COPYRIGHT EXCLUSIVO
+--------------------------------------------------------------------------------
+2.1 El Software es una obra bajo copyright exclusivo del Titular. En Chile está
+    protegido como programa computacional por la Ley N° 17.336 sobre Propiedad
+    Intelectual (art. 3 N° 16) y demás normas aplicables, y por los tratados
+    internacionales de derechos de autor.
+2.2 Todos los derechos que no se conceden expresamente quedan reservados al Titular.
+    El acceso al repositorio NO constituye ni implica licencia alguna.
 
-El uso del Software contra sistemas ajenos sin autorización puede constituir
-delito conforme a la Ley N° 21.459 que establece normas sobre delitos
-informáticos (entre otros: acceso ilícito a un sistema informático,
-interceptación ilícita, y ataque a la integridad de datos o de sistemas).
-Toda responsabilidad civil y penal por un uso indebido recae exclusivamente en
-quien ejecuta el Software; DBB Labs no autoriza ni respalda ningún uso ilícito.
+--------------------------------------------------------------------------------
+3. AUSENCIA DE LICENCIA / RESERVA DE DERECHOS
+--------------------------------------------------------------------------------
+Conforme a la guía citada, por defecto nadie puede usar, copiar, ejecutar, reproducir,
+distribuir, comunicar públicamente, publicar, sublicenciar, arrendar, adaptar,
+transformar, descompilar, aplicar ingeniería inversa ni crear obras derivadas del
+Software, en todo o en parte, sin autorización escrita, previa y expresa del Titular.
+La falta de autorización expresa significa que NO hay permiso.
 
-================================================================================
-3. EXCEPCIONES (COMPONENTES DE TERCEROS — CONSERVAN SU LICENCIA)
-================================================================================
-Lo anterior NO cubre estos componentes, que mantienen su licencia de origen:
-  - playbooks/strix-source/  → obra derivada de Strix (usestrix/strix), bajo
-    Apache License 2.0. Ver playbooks/strix-source/LICENSE-APACHE y NOTICE.
-    (En Chile, "obra derivada" según Ley 17.336; se respeta la licencia original.)
-  - marcos/  → catálogos derivados del corpus propio de DBB (ISO 27002, OWASP,
-    WCAG), para uso interno de DBB.
+--------------------------------------------------------------------------------
+4. USO AUTORIZADO (HERRAMIENTA DE SEGURIDAD OFENSIVA)
+--------------------------------------------------------------------------------
+4.1 El Software ejecuta pruebas de intrusión (ataques reales) en un laboratorio local
+    aislado. Cuando el Titular autorice su uso, éste queda limitado ÚNICAMENTE a:
+    (a) Sistemas Objetivo de titularidad de Usted, o
+    (b) Sistemas Objetivo para los que Usted cuente con autorización escrita, expresa
+        y vigente de su titular.
+4.2 Queda prohibido dirigir el Software contra sistemas de terceros sin autorización.
 
-================================================================================
-4. SIN GARANTÍA · LEY APLICABLE
-================================================================================
-EL SOFTWARE SE ENTREGA "TAL CUAL", SIN GARANTÍA DE NINGÚN TIPO. En la máxima
-medida permitida por la ley, DBB Labs no responde por daños derivados de su uso.
+--------------------------------------------------------------------------------
+5. CUMPLIMIENTO LEGAL Y RESPONSABILIDAD
+--------------------------------------------------------------------------------
+5.1 El uso del Software contra sistemas ajenos sin autorización puede constituir delito
+    conforme a la Ley N° 21.459 que establece normas sobre delitos informáticos (entre
+    otros: acceso ilícito a un sistema informático, interceptación ilícita, y ataque a
+    la integridad de datos informáticos o de un sistema informático).
+5.2 Si el uso involucra datos personales, Usted debe cumplir la Ley N° 19.628 y la
+    Ley N° 21.719 sobre protección de datos personales.
+5.3 Toda responsabilidad civil, penal y administrativa por el uso del Software recae
+    exclusivamente en Usted. El Titular no autoriza ni respalda ningún uso ilícito.
 
-Este acuerdo se rige por las leyes de la República de Chile. Cualquier
-controversia se someterá a los tribunales ordinarios de justicia con asiento en
-Santiago de Chile.
+--------------------------------------------------------------------------------
+6. CONFIDENCIALIDAD
+--------------------------------------------------------------------------------
+Los informes, hallazgos y datos que el Software genere sobre un Sistema Objetivo son
+información sensible; Usted los tratará como confidenciales y no los divulgará sin
+autorización del titular del Sistema Objetivo.
 
-Contacto para autorizaciones: DBB Labs.
+--------------------------------------------------------------------------------
+7. COMPONENTES DE TERCEROS (CONSERVAN SU LICENCIA)
+--------------------------------------------------------------------------------
+7.1 playbooks/strix-source/ — obra derivada de Strix (usestrix/strix), bajo Apache
+    License 2.0. Ver playbooks/strix-source/LICENSE-APACHE y el archivo NOTICE. En Chile,
+    "obra derivada" según Ley N° 17.336; se respeta su licencia de origen.
+7.2 marcos/ — catálogos derivados del corpus propio de DBB (ISO 27002, OWASP, WCAG),
+    para uso interno de DBB.
+7.3 Dependencias de terceros (npm, Playwright, etc.) se rigen por sus propias licencias.
+
+--------------------------------------------------------------------------------
+8. SIN GARANTÍA
+--------------------------------------------------------------------------------
+EL SOFTWARE SE ENTREGA "TAL CUAL" Y "SEGÚN DISPONIBILIDAD", SIN GARANTÍA DE NINGÚN
+TIPO, EXPRESA O IMPLÍCITA, INCLUIDAS LAS DE COMERCIABILIDAD, IDONEIDAD PARA UN FIN
+PARTICULAR Y NO INFRACCIÓN.
+
+--------------------------------------------------------------------------------
+9. LIMITACIÓN DE RESPONSABILIDAD
+--------------------------------------------------------------------------------
+En la máxima medida permitida por la ley chilena, el Titular no responderá por daños
+directos, indirectos, incidentales, especiales ni consecuenciales derivados del uso o
+la imposibilidad de uso del Software.
+
+--------------------------------------------------------------------------------
+10. VIGENCIA Y TÉRMINO
+--------------------------------------------------------------------------------
+Cualquier autorización otorgada por el Titular termina de forma automática si Usted
+incumple este contrato. Al término, Usted debe cesar todo uso y destruir las copias.
+
+--------------------------------------------------------------------------------
+11. LEY APLICABLE Y JURISDICCIÓN
+--------------------------------------------------------------------------------
+Este contrato se rige por las leyes de la República de Chile. Toda controversia se
+someterá a los tribunales ordinarios de justicia con asiento en Santiago de Chile.
+
+--------------------------------------------------------------------------------
+12. CONTACTO
+--------------------------------------------------------------------------------
+Autorizaciones y consultas: DBB Labs (Felipe Córdova).
+
+Aviso: este texto es una redacción de buena fe anclada en las leyes citadas; no
+constituye asesoría legal. Para uso con terceros, revisar con un abogado en Chile.
