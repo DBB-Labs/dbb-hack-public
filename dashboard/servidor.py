@@ -14,11 +14,17 @@ class H(SimpleHTTPRequestHandler):
         self.send_header("Cache-Control","no-store"); super().end_headers()
     def log_message(self,*a): pass
     def do_POST(self):
-        if self.path.split("?")[0] != "/api/lanzar":
+        path=self.path.split("?")[0]
+        if path not in ("/api/lanzar","/api/limpiar"):
             self.send_error(404); return
         try:
             n=int(self.headers.get("Content-Length",0)); body=json.loads(self.rfile.read(n) or b"{}")
         except Exception: body={}
+        if path=="/api/limpiar":
+            obj=str(body.get("objetivo","kapa21-v2"))[:80]
+            subprocess.run(["python3", os.path.join(HERE,"emitir.py"),"reset",obj])
+            self.send_response(200); self.send_header("Content-Type","application/json"); self.end_headers()
+            self.wfile.write(json.dumps({"ok":True}).encode()); return
         obj=str(body.get("objetivo","kapa21-v2"))[:80]
         niv=str(body.get("nivel","full"))[:10]
         vec=body.get("vectores","all")

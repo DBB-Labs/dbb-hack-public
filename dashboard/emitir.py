@@ -59,6 +59,12 @@ def main():
         d["integridad"]=int(a[5])
     elif cmd=="estado":
         d["estado"]=a[1]
+    elif cmd=="reset":
+        obj=a[1] if len(a)>1 else d.get("objetivo","—")
+        d={"marca":"DBB Labs","objetivo":obj,"stack":d.get("stack",""),"modo":"listo para lanzar",
+           "estado":"completado","kpis":{"vectores":0,"defendidos":0,"hallazgos":0,"cobertura":0},
+           "severidades":{"critica":0,"alta":0,"media":0,"baja":0},"integridad":100,
+           "veredicto":"Sin corrida — listo para lanzar.","ataques":[],"eventos":[]}
     save(d)
 
 if __name__=="__main__": main()

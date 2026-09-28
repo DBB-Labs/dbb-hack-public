@@ -173,6 +173,7 @@
     <div style="flex:1;min-width:240px;font-size:12px;color:var(--muted)">Vectores
       <div id="c-vecs" style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--tx)"></div></div>
     <button class="btn primary" style="font-size:14px;padding:11px 20px" onclick="lanzar()">🚀 LANZAR ATAQUE</button>
+    <button class="btn" style="font-size:13px;padding:11px 14px" onclick="limpiar()">🗑 Limpiar</button>
   </div>
   <div id="c-msg" style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--cy)"></div>
 </div>
@@ -468,6 +469,14 @@ async function lanzar(){
     const d=await r.json();msg.textContent=d.ok?('✅ Ataque en curso ('+d.vectores+') — mira el radar y el feed.'):'Error al lanzar.';
     lastCount=0;sigAtk='';sigFinds='';
   }catch(e){msg.style.color='var(--rd)';msg.textContent='🔴 Sin servidor de control. Arranca: bash dashboard/servir.sh';}
+}
+async function limpiar(){
+  const obj=(document.getElementById('c-obj').value||'kapa21-v2').trim();
+  const msg=document.getElementById('c-msg');
+  try{await fetch('/api/limpiar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({objetivo:obj})});
+    lastCount=0;sigAtk='';sigFinds='';msg.style.color='var(--muted)';msg.textContent='🗑 Consola en blanco — listo para lanzar.';
+    const inf=$('informe');if(inf)inf.style.display='none';
+  }catch(e){msg.style.color='var(--rd)';msg.textContent='🔴 Sin servidor de control.';}
 }
 async function toggleInforme(){const el=$('informe');
   const abierto=el.style.display!=='none'&&el.style.display!=='';
