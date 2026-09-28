@@ -2,7 +2,7 @@
 
 Revisión de seguridad de caja blanca (leyendo código) para el stack DBB:
 **Next.js (App Router) + Supabase**. La corre Claude Code dentro de VS Code, gratis,
-guiada por los `playbooks/`. No explota en vivo como Strix; encuentra leyendo el código.
+guiada por los `playbooks/`. Corre estático y ataca en vivo en laboratorio aislado (nunca producción).
 
 ## Principio rector
 La mayoría de las fallas reales de estas apps **no son inyección clásica**, son de

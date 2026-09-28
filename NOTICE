@@ -4,8 +4,8 @@ Los playbooks en playbooks/strix-source/ son copiados y adaptados de Strix
 (https://github.com/usestrix/strix), licencia Apache-2.0, commit d6dd9de.
 Copyright de esos archivos: Strix / usestrix. Ver LICENSE (Apache-2.0).
 
-DBB-HACK NO ejecuta exploits en vivo como Strix; es una revisión de código
-(caja blanca) asistida por Claude Code, guiada por estos playbooks.
+DBB-HACK ejecuta análisis estático Y explotación en vivo en un laboratorio local aislado
+(nunca producción), asistido por Claude Code y guiado por estos playbooks.
 Uso interno de DBB. Solo sobre repos propios y autorizados.
 
 --- marcos/ ---
