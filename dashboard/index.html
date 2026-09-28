@@ -63,6 +63,7 @@
   .st-vulnerable .badge{background:rgba(248,113,113,.14);color:var(--rd);border:1px solid rgba(248,113,113,.3);animation:blink 1.8s ease-in-out infinite}
   .st-corriendo .badge{background:rgba(242,101,34,.14);color:var(--cy);border:1px solid rgba(242,101,34,.35);animation:blink 1.6s ease-in-out infinite}
   .st-planificado .badge{background:#0e151d;color:var(--muted);border:1px solid var(--line)} .st-planificado{opacity:.6}
+  .st-no-probado .badge{background:#0e151d;color:var(--muted);border:1px dashed var(--line)} .st-no-probado{opacity:.7}
   .st-manual .badge{background:rgba(96,165,250,.12);color:var(--bl);border:1px solid rgba(96,165,250,.3)}
   .card .name{font-weight:600;font-size:14px}
   .card .det{color:var(--muted);font-size:12px;margin-top:3px;line-height:1.4}
@@ -322,8 +323,8 @@ function loop(){energy*=0.94;drawOsc();drawRadar();drawAct();requestAnimationFra
 addEventListener('resize',()=>{ox=fitCanvas(osc);rx=fitCanvas(radar);ax=fitCanvas(act);});
 ox=fitCanvas(osc);rx=fitCanvas(radar);ax=fitCanvas(act);loop();
 
-const iconos={defendido:'🛡️',hallazgo:'⚠️',vulnerable:'🔴',corriendo:'⚡',planificado:'⏳',manual:'🔍'};
-const stTxt={defendido:'Defendido',hallazgo:'Hallazgo',vulnerable:'Vulnerable',corriendo:'Corriendo',planificado:'Planificado',manual:'Manual'};
+const iconos={defendido:'🛡️',hallazgo:'⚠️',vulnerable:'🔴',corriendo:'⚡',planificado:'⏳',manual:'🔍','no-probado':'⚪'};
+const stTxt={defendido:'Defendido',hallazgo:'Hallazgo',vulnerable:'Vulnerable',corriendo:'Corriendo',planificado:'Planificado',manual:'Manual','no-probado':'No probado'};
 const EXPLICA={
  S1:{que:"Revisa si quedaron 'llaves' escritas dentro del código: contraseñas, tokens o claves de acceso.",riesgo:"Es como dejar la llave de la caja fuerte pegada en la puerta: cualquiera que vea el código entra.",como:"Se revisa cada archivo y TODO el historial de cambios buscando algo que parezca una llave.",bien:"Que no haya ninguna. Las llaves se guardan aparte (variables de entorno), nunca en el código."},
  S2:{que:"Tu app usa piezas hechas por otros (librerías). Esto revisa si alguna tiene fallas de seguridad ya conocidas.",riesgo:"Es un agujero que tú no hiciste, pero que igual te afecta — como un candado defectuoso que compraste.",como:"Se compara tu lista de piezas contra un registro mundial de fallas conocidas.",bien:"Que ninguna pieza tenga fallas conocidas (o que estén actualizadas)."},
@@ -365,7 +366,7 @@ function openDrawer(id){
   const v=(CATALOGO||[]).find(x=>x.id===id)||{};
   const a=(D.ataques||[]).find(x=>x.id===id)||{};
   const e=EXPLICA[id];const est=a.estado||v.status||'planificado';
-  const ico={defendido:'🛡️',hallazgo:'⚠️',vulnerable:'🔴',corriendo:'⚡',planificado:'⏳',manual:'🔍'}[est]||'•';
+  const ico={defendido:'🛡️',hallazgo:'⚠️',vulnerable:'🔴',corriendo:'⚡',planificado:'⏳',manual:'🔍','no-probado':'⚪'}[est]||'•';
   const sec=(lab,txt)=>txt?`<div class="dsec"><div class="lab">${lab}</div><p>${txt}</p></div>`:'';
   let body=`<div class="dhead"><div class="dbadge st-${est}" style="background:rgba(242,101,34,.12)">${ico}</div>
     <div><h3>${id} · ${v.nombre||a.nombre||id}</h3><div class="dsub">${(v.capa||'').toUpperCase()} · OWASP ${v.owasp||a.owasp||'—'} · ISO ${v.iso||a.iso||'—'}</div></div></div>`;
@@ -394,7 +395,7 @@ function render(d){D=d;const done=d.estado==='completado';document.body.classLis
   const cd=$('ctl-def'),ch=$('ctl-hal');if(cd)cd.textContent=d.kpis.defendidos;if(ch)ch.textContent=d.kpis.hallazgos;
   countTo($('k-vec'),d.kpis.vectores);countTo($('k-def'),d.kpis.defendidos);countTo($('k-hal'),d.kpis.hallazgos);countTo($('k-cob'),d.kpis.cobertura);
   const g=Math.max(0,Math.min(100,d.integridad||0));$('gaugeArc').style.strokeDashoffset=251-251*g/100;$('gaugeVal').textContent=g;$('gaugeVal').style.color=g>=80?'var(--gr)':g>=50?'var(--am)':'var(--rd)';
-  const sev={critica:0,alta:0,media:0,baja:0};(d.ataques||[]).forEach(a=>{if(a.estado==='hallazgo'||a.estado==='vulnerable'){const k=a.severidad||'media';sev[k]=(sev[k]||0)+1;}});
+  const sev={critica:0,alta:0,media:0,baja:0};(d.ataques||[]).forEach(a=>{if(a.estado==='vulnerable'){sev.critica++;}else if(a.estado==='hallazgo'){const k=a.severidad||'media';sev[k]=(sev[k]||0)+1;}});
   mkDonut(sev);
   // verdict
   if(d.veredicto){$('verdict').style.display='flex';const crit=(d.severidades&&(d.severidades.critica||d.severidades.alta))>0;
@@ -406,7 +407,7 @@ function render(d){D=d;const done=d.estado==='completado';document.body.classLis
     <div style="flex:1;min-width:0"><div class="name">${a.id} · ${a.nombre}</div><div class="det">${a.detalle||''}</div>
     <div class="tags"><span class="tag">${a.categoria}</span><span class="tag">OWASP ${a.owasp}</span><span class="tag">ISO ${a.iso}</span></div></div>
     <div class="status-txt">${stTxt[a.estado]||a.estado}</div></div>`).join('');
-    const _c=$('atk').querySelector('.st-corriendo');if(_c)_c.scrollIntoView({block:'nearest',behavior:'smooth'});}
+    const _b=$('atk'),_c=_b.querySelector('.st-corriendo');if(_c)_b.scrollTop=_c.offsetTop-_b.offsetTop-20;}
   const ev=d.eventos||[],feed=$('feed');
   if(ev.length!==lastCount){ // solo re-render cuando hay evento nuevo → sin parpadeo
     feed.innerHTML=ev.map(e=>`<div class="ev ${e.tipo}"><span class="h">${e.hora}</span><span class="x">${e.texto}</span></div>`).join('')+(done?'<div class="fin-end">— fin del run —</div>':'');

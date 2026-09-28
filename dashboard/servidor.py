@@ -47,7 +47,7 @@ class H(SimpleHTTPRequestHandler):
         vec=body.get("vectores","all")
         vec=",".join(vec) if isinstance(vec,list) and vec else "all"
         # lanzar el orquestador en segundo plano
-        subprocess.Popen(["bash", os.path.join(HERE,"atacar.sh"), obj, niv, vec],
+        subprocess.Popen(["bash", os.path.join(HERE,"lanzar.sh"), obj, niv, vec],
                          stdout=open("/tmp/dbb-atacar.log","a"), stderr=subprocess.STDOUT)
         self.send_response(200); self.send_header("Content-Type","application/json"); self.end_headers()
         self.wfile.write(json.dumps({"ok":True,"objetivo":obj,"nivel":niv,"vectores":vec}).encode())
