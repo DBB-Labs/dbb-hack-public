@@ -1,7 +1,6 @@
-dashboard/estado.json
-dashboard/historial.json
-dashboard/metricas.json
 node_modules/
 test-results/
 playwright-report/
 .playwright/
+dashboard/metricas.json
+dashboard/logs.json
