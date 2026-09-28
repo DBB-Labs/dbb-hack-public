@@ -213,6 +213,7 @@
 const $=id=>document.getElementById(id);
 window.onerror=(m,src,l)=>{const e=document.getElementById('modo');if(e){e.textContent='⚠️ error UI: '+m+' ('+l+')';e.style.color='var(--rd)';}};
 let donut,lastCount=0,kAnim={},D={ataques:[],eventos:[],severidades:{critica:0,alta:0,media:0,baja:0}},energy=0,sigAtk='',sigFinds='';
+let M={serie_cpu:[],serie_net:[],containers:[],totales:{cpu:0,mem_mib:0,rx_rate_kbs:0,tx_rate_kbs:0},n:0};
 function countTo(el,to){const from=kAnim[el.id]||0;kAnim[el.id]=to;const t0=performance.now(),d=700;
   (function s(t){const p=Math.min(1,(t-t0)/d);el.childNodes[0].nodeValue=Math.round(from+(to-from)*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(s);})(performance.now());}
 function fitCanvas(c){const r=c.getBoundingClientRect();const dpr=devicePixelRatio||1;c.width=r.width*dpr;c.height=c.height*dpr;const x=c.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);return x;}
@@ -338,7 +339,6 @@ function exportar(){
     <script>window.onload=()=>window.print()<\/script></body></html>`;
   const w=window.open('','_blank');w.document.write(html);w.document.close();
 }
-let M={serie_cpu:[],serie_net:[],containers:[],totales:{cpu:0,mem_mib:0,rx_rate_kbs:0,tx_rate_kbs:0},n:0};
 const VECTORES=[["A0","Robo externo"],["A1","Aislamiento RLS"],["A2","Escalada"],["A3","Sin 2FA"],["A4","Webhook"],["A5","Crons"],["A6","Fuerza bruta"]];
 // qué vectores incluye cada nivel (los estáticos LOW/MID corren aparte; los live son A0-A6)
 const NIVEL_VEC={low:[],mid:[],full:["A0","A1","A2","A3","A4","A5","A6"],bamf:["A0","A1","A2","A3","A4","A5","A6"]};
