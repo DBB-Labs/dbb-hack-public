@@ -43,7 +43,7 @@
     background:linear-gradient(90deg,rgba(52,211,153,.12),transparent);}
   .verdict .ico{font-size:26px}
   .verdict .txt b{font-size:16px} .verdict .txt div{color:var(--muted);font-size:12.5px;margin-top:2px}
-  .cmd{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:14px;margin-bottom:10px}
+  .cmd{display:grid;grid-template-columns:1.3fr 1fr 1.3fr 0.9fr;gap:14px;margin-bottom:10px}
   @media(max-width:1050px){.cmd{grid-template-columns:1fr}}
   canvas.viz{width:100%;display:block;border-radius:8px;background:#050a0e}
   .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:10px}
@@ -183,7 +183,7 @@
         <circle cx="38" cy="38" r="30" stroke="#0a1017" stroke-width="8" fill="none"/>
         <circle id="prog-ring" cx="38" cy="38" r="30" stroke="url(#pg)" stroke-width="8" fill="none" stroke-linecap="round"
           stroke-dasharray="188.5" stroke-dashoffset="188.5" transform="rotate(-90 38 38)" style="transition:stroke-dashoffset .5s ease"/>
-        <defs><linearGradient id="pg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--cy)"/><stop offset="1" stop-color="var(--mg)"/></linearGradient></defs>
+        <defs><linearGradient id="pg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f26522"/><stop offset="1" stop-color="#ff9a5a"/></linearGradient></defs>
       </svg>
       <div id="prog-pct" style="position:absolute;inset:0;display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:16px;color:var(--cy)">0%</div>
     </div>
@@ -204,6 +204,7 @@
 <div class="cmd">
   <div class="panel"><h2><span class="live"></span>Osciloscopio · CPU real del lab</h2><canvas id="osc" class="viz" height="140"></canvas></div>
   <div class="panel"><h2><span class="live"></span>Radar · contenedores del lab (real)</h2><canvas id="radar" class="viz" height="140"></canvas></div>
+  <div class="panel"><h2><span class="live"></span>Actividad de red · tráfico real</h2><canvas id="activity" class="viz" height="140"></canvas></div>
   <div class="panel"><h2>Integridad de defensa</h2>
     <div class="gauge-wrap"><div class="gauge">
       <svg width="180" height="104" viewBox="0 0 200 120">
@@ -213,8 +214,6 @@
       </svg><div class="val" id="gaugeVal">0</div></div></div>
   </div>
 </div>
-
-<div class="panel" style="margin-bottom:10px"><h2><span class="live"></span>Actividad de red · tráfico real del lab</h2><canvas id="activity" class="viz" height="72"></canvas></div>
 
 <div class="panel" style="margin-bottom:10px">
   <h2><span class="live"></span>Contenedores del lab · docker stats (real)</h2>
@@ -270,7 +269,7 @@ function mkDonut(s){const tot=(s.critica||0)+(s.alta||0)+(s.media||0)+(s.baja||0
   const c=$('donut-c');if(c)c.textContent=tot?tot+(tot===1?' hallazgo':' hallazgos'):'✓ 0';}
 /* osciloscopio */
 const osc=$('osc');let ox=osc.getContext('2d'),oscPhase=0;
-function drawOsc(){const w=osc.clientWidth,h=180;ox.clearRect(0,0,w,h);
+function drawOsc(){const w=osc.clientWidth,h=140;ox.clearRect(0,0,w,h);
   ox.strokeStyle='rgba(242,101,34,.08)';ox.lineWidth=1;
   for(let gx=0;gx<w;gx+=w/16){ox.beginPath();ox.moveTo(gx,0);ox.lineTo(gx,h);ox.stroke();}
   for(let gy=0;gy<h;gy+=h/6){ox.beginPath();ox.moveTo(0,gy);ox.lineTo(w,gy);ox.stroke();}
@@ -280,7 +279,7 @@ function drawOsc(){const w=osc.clientWidth,h=180;ox.clearRect(0,0,w,h);
   const cur=s.length?s[s.length-1]:0;ox.fillStyle='#f26522';ox.font='600 13px "JetBrains Mono",monospace';ox.fillText('CPU '+cur.toFixed(1)+'% · real',10,18);}
 /* radar */
 const radar=$('radar');let rx=radar.getContext('2d'),sweep=0;
-function drawRadar(){const w=radar.clientWidth,h=180,cx=w/2,cy=h/2,R=Math.min(cx,cy)-6;rx.clearRect(0,0,w,h);
+function drawRadar(){const w=radar.clientWidth,h=140,cx=w/2,cy=h/2,R=Math.min(cx,cy)-6;rx.clearRect(0,0,w,h);
   rx.strokeStyle='rgba(52,211,153,.18)';rx.lineWidth=1;
   for(let i=1;i<=3;i++){rx.beginPath();rx.arc(cx,cy,R*i/3,0,7);rx.stroke();}
   rx.beginPath();rx.moveTo(cx-R,cy);rx.lineTo(cx+R,cy);rx.moveTo(cx,cy-R);rx.lineTo(cx,cy+R);rx.stroke();
@@ -306,7 +305,7 @@ function drawRadar(){const w=radar.clientWidth,h=180,cx=w/2,cy=h/2,R=Math.min(cx
   sweep+=0.028;}
 /* actividad */
 const act=$('activity');let ax=act.getContext('2d'),series=[];
-function drawAct(){const w=act.clientWidth,h=90;ax.clearRect(0,0,w,h);
+function drawAct(){const w=act.clientWidth,h=140;ax.clearRect(0,0,w,h);
   const s=M.serie_net||[];const max=Math.max(10,Math.max(...s,0));const step=w/Math.max(1,s.length-1);
   ax.strokeStyle='rgba(96,165,250,.08)';for(let gy=0;gy<h;gy+=h/4){ax.beginPath();ax.moveTo(0,gy);ax.lineTo(w,gy);ax.stroke();}
   const grad=ax.createLinearGradient(0,0,0,h);grad.addColorStop(0,'rgba(242,101,34,.5)');grad.addColorStop(1,'rgba(242,101,34,0)');
