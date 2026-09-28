@@ -15,7 +15,7 @@
   body{padding:16px;max-width:1500px;margin:0 auto;
     background-image:radial-gradient(1200px 600px at 85% -10%,rgba(242,101,34,.07),transparent),radial-gradient(900px 500px at -10% 110%,rgba(255,154,90,.06),transparent);}
   .scan{position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.015) 0 1px,transparent 1px 3px);z-index:99;mix-blend-mode:overlay}
-  .panel{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:14px;padding:14px;position:relative;overflow:hidden}
+  .panel{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:14px;padding:12px;position:relative;overflow:hidden}
   .panel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(242,101,34,.5),transparent)}
   h2{font-size:11px;text-transform:uppercase;letter-spacing:2.5px;color:var(--muted);margin:0 0 10px;display:flex;align-items:center;gap:8px}
   h2 .live{width:7px;height:7px;border-radius:50%;background:var(--rd);box-shadow:0 0 8px var(--rd);animation:blink 2.4s ease-in-out infinite}
@@ -39,14 +39,14 @@
   .btn:hover{border-color:var(--cy);color:var(--cy);box-shadow:var(--glow)}
   .btn.primary{background:linear-gradient(90deg,rgba(242,101,34,.18),rgba(255,154,90,.14));border-color:rgba(242,101,34,.4)}
   /* verdict band */
-  .verdict{display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:14px;margin-bottom:14px;border:1px solid var(--line);
+  .verdict{display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:14px;margin-bottom:10px;border:1px solid var(--line);
     background:linear-gradient(90deg,rgba(52,211,153,.12),transparent);}
   .verdict .ico{font-size:26px}
   .verdict .txt b{font-size:16px} .verdict .txt div{color:var(--muted);font-size:12.5px;margin-top:2px}
-  .cmd{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:14px;margin-bottom:14px}
+  .cmd{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:14px;margin-bottom:10px}
   @media(max-width:1050px){.cmd{grid-template-columns:1fr}}
   canvas.viz{width:100%;display:block;border-radius:8px;background:#050a0e}
-  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:10px}
   @media(max-width:700px){.kpis{grid-template-columns:repeat(2,1fr)}}
   .kpi .n{font-size:38px;font-weight:700;line-height:1;font-family:'JetBrains Mono',monospace}
   .kpi .l{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-top:7px}
@@ -71,7 +71,7 @@
   .gauge-wrap{display:flex;flex-direction:column;align-items:center;margin:6px 0}
   .gauge{position:relative;width:180px;height:104px}
   .gauge .val{position:absolute;bottom:0;left:0;right:0;text-align:center;font-size:34px;font-weight:700;font-family:'JetBrains Mono',monospace}
-  .feed{font-family:'JetBrains Mono',monospace;font-size:12px;height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:5px}
+  .feed{font-family:'JetBrains Mono',monospace;font-size:12px;height:150px;overflow-y:auto;display:flex;flex-direction:column;gap:5px}
   .ev{display:flex;gap:9px;padding:4px 7px;border-radius:6px;border-left:2px solid var(--line);background:#070d13;animation:slidein .4s ease}
   @keyframes slidein{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}
   .ev .h{color:var(--muted);white-space:nowrap}
@@ -105,7 +105,7 @@
   .barcell .bar{position:absolute;left:0;top:0;bottom:0;background:rgba(242,101,34,.16);z-index:0}
   .barcell span{position:relative;z-index:1}
   .cpuhot{color:var(--am);font-weight:600}
-  .logfeed{font-family:'JetBrains Mono',monospace;font-size:11.5px;height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:3px}
+  .logfeed{font-family:'JetBrains Mono',monospace;font-size:11.5px;height:170px;overflow-y:auto;display:flex;flex-direction:column;gap:3px}
   .logline{display:flex;gap:9px;padding:3px 7px;border-radius:5px;border-left:2px solid var(--line);background:#070d13;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .logline .lh{color:var(--muted)} .logline .lc{color:var(--cy);min-width:70px}
   .logline.warn{border-left-color:var(--am)} .logline.warn .lm{color:var(--am)}
@@ -137,7 +137,7 @@
   <div class="txt"><b id="v-txt">—</b><div id="v-sub">—</div></div>
 </div>
 
-<div class="panel" style="margin-bottom:14px">
+<div class="panel" style="margin-bottom:10px">
   <h2>Panel de control · seleccionar y lanzar</h2>
   <div style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap">
     <label style="font-size:12px;color:var(--muted)">Objetivo<br>
@@ -153,7 +153,7 @@
   <div id="c-msg" style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--cy)"></div>
 </div>
 
-<div class="panel" style="margin-bottom:14px;display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+<div class="panel" style="margin-bottom:10px;display:flex;gap:20px;align-items:center;flex-wrap:wrap">
   <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px" id="m-run">en espera</span>
   <span style="margin-left:auto;display:flex;gap:22px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted)">
     <span>🖥️ <b style="color:var(--tx)" id="m-cont">0</b> contenedores</span>
@@ -164,8 +164,8 @@
 </div>
 
 <div class="cmd">
-  <div class="panel"><h2><span class="live"></span>Osciloscopio · CPU real del lab</h2><canvas id="osc" class="viz" height="180"></canvas></div>
-  <div class="panel"><h2><span class="live"></span>Radar · contenedores del lab (real)</h2><canvas id="radar" class="viz" height="180"></canvas></div>
+  <div class="panel"><h2><span class="live"></span>Osciloscopio · CPU real del lab</h2><canvas id="osc" class="viz" height="140"></canvas></div>
+  <div class="panel"><h2><span class="live"></span>Radar · contenedores del lab (real)</h2><canvas id="radar" class="viz" height="140"></canvas></div>
   <div class="panel"><h2>Integridad de defensa</h2>
     <div class="gauge-wrap"><div class="gauge">
       <svg width="180" height="104" viewBox="0 0 200 120">
@@ -176,16 +176,16 @@
   </div>
 </div>
 
-<div class="panel" style="margin-bottom:14px"><h2><span class="live"></span>Actividad de red · tráfico real del lab</h2><canvas id="activity" class="viz" height="90"></canvas></div>
+<div class="panel" style="margin-bottom:10px"><h2><span class="live"></span>Actividad de red · tráfico real del lab</h2><canvas id="activity" class="viz" height="72"></canvas></div>
 
-<div class="panel" style="margin-bottom:14px">
+<div class="panel" style="margin-bottom:10px">
   <h2><span class="live"></span>Contenedores del lab · docker stats (real)</h2>
   <div style="overflow-x:auto"><table class="stats"><thead><tr>
     <th>Contenedor</th><th>CPU %</th><th>Memoria</th><th>Mem %</th><th>Disco R/W</th><th>Red I/O</th><th>PIDs</th>
   </tr></thead><tbody id="stats-body"></tbody></table></div>
 </div>
 
-<div class="panel" style="margin-bottom:14px">
+<div class="panel" style="margin-bottom:10px">
   <h2><span class="live"></span>Logs en vivo del lab</h2>
   <div class="logfeed" id="logfeed"></div>
 </div>
@@ -200,7 +200,7 @@
 <div class="grid">
   <div class="panel"><h2><span class="live"></span>Matriz de ataque</h2><div class="atk" id="atk"></div></div>
   <div>
-    <div class="panel" style="margin-bottom:14px"><h2>Severidad</h2><canvas id="donut" height="170"></canvas></div>
+    <div class="panel" style="margin-bottom:10px"><h2>Severidad</h2><canvas id="donut" height="170"></canvas></div>
     <div class="panel"><h2><span class="live"></span>Feed</h2><div class="feed" id="feed"></div></div>
   </div>
 </div>
@@ -339,6 +339,19 @@ function exportar(){
     <script>window.onload=()=>window.print()<\/script></body></html>`;
   const w=window.open('','_blank');w.document.write(html);w.document.close();
 }
+const INFO={
+  "db":"PostgreSQL — la base de datos: guarda TODO (usuarios, finanzas, ledger). Aquí vive la RLS.",
+  "storage":"Storage API — archivos: documentos de identidad, comprobantes, contratos de empresas.",
+  "auth":"GoTrue — autenticación: login, sesiones, JWT y segundo factor (MFA).",
+  "analytics":"Logflare — recolector central de logs y métricas del proyecto.",
+  "pg meta":"Postgres Meta — API para inspeccionar el esquema; la usa Studio.",
+  "realtime":"Realtime — suscripciones en vivo (websockets) a cambios de la base.",
+  "rest":"PostgREST — API REST automática sobre la base; respeta la RLS.",
+  "vector":"Vector — envía los logs de los contenedores hacia analytics.",
+  "edge runtime":"Edge Runtime — ejecuta las Edge Functions (Deno) del proyecto.",
+  "kong":"Kong — API gateway: la puerta de entrada que enruta a todos los servicios.",
+  "studio":"Studio — el panel visual de Supabase (127.0.0.1:54323).",
+  "inbucket":"Mailpit — buzón de correo de PRUEBA: captura los emails localmente."};
 const VECTORES=[["A0","Robo externo"],["A1","Aislamiento RLS"],["A2","Escalada"],["A3","Sin 2FA"],["A4","Webhook"],["A5","Crons"],["A6","Fuerza bruta"]];
 // qué vectores incluye cada nivel (los estáticos LOW/MID corren aparte; los live son A0-A6)
 const NIVEL_VEC={low:[],mid:[],full:["A0","A1","A2","A3","A4","A5","A6"],bamf:["A0","A1","A2","A3","A4","A5","A6"]};
@@ -380,8 +393,8 @@ function renderMetrics(){const t=M.totales||{};
   $('m-run').style.color=corr?'var(--cy)':(done?'var(--gr)':'var(--muted)');
   // tabla docker stats real
   const cs=M.containers||[];const maxcpu=Math.max(1,...cs.map(c=>c.cpu));
-  $('stats-body').innerHTML=cs.map(c=>`<tr>
-    <td>${c.name}</td>
+  $('stats-body').innerHTML=cs.map(c=>`<tr title="${(INFO[c.name]||'contenedor del lab').replace(/"/g,'')}" style="cursor:help">
+    <td>${c.name} <span style="color:var(--muted)">ⓘ</span></td>
     <td class="barcell ${c.cpu>5?'cpuhot':''}"><div class="bar" style="width:${Math.min(100,c.cpu/maxcpu*100)}%"></div><span>${c.cpu.toFixed(2)}%</span></td>
     <td>${c.mem>=1024?(c.mem/1024).toFixed(2)+' GiB':Math.round(c.mem)+' MiB'}</td>
     <td>${(c.mem_pct||0).toFixed(2)}%</td>
