@@ -211,6 +211,7 @@
 
 <script>
 const $=id=>document.getElementById(id);
+window.onerror=(m,src,l)=>{const e=document.getElementById('modo');if(e){e.textContent='⚠️ error UI: '+m+' ('+l+')';e.style.color='var(--rd)';}};
 let donut,lastCount=0,kAnim={},D={ataques:[],eventos:[],severidades:{critica:0,alta:0,media:0,baja:0}},energy=0,sigAtk='',sigFinds='';
 function countTo(el,to){const from=kAnim[el.id]||0;kAnim[el.id]=to;const t0=performance.now(),d=700;
   (function s(t){const p=Math.min(1,(t-t0)/d);el.childNodes[0].nodeValue=Math.round(from+(to-from)*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(s);})(performance.now());}
@@ -270,7 +271,10 @@ ox=fitCanvas(osc);rx=fitCanvas(radar);ax=fitCanvas(act);loop();
 const iconos={defendido:'🛡️',hallazgo:'⚠️',vulnerable:'🔴',corriendo:'⚡'};
 const stTxt={defendido:'Defendido',hallazgo:'Hallazgo',vulnerable:'Vulnerable',corriendo:'Corriendo'};
 function render(d){D=d;const done=d.estado==='completado';document.body.classList.toggle('done',done);
-  $('modo').textContent=d.modo||'';$('objetivo').textContent=d.objetivo||'—';$('stack').textContent=d.stack||'';
+  const base=(d.modo||'DBB-HACK').replace(/\s*·\s*EN VIVO$/i,'');
+  const mel=$('modo');mel.style.color='var(--muted)';
+  mel.textContent=base+' · '+(done?'✓ COMPLETADO':(d.ataques&&d.ataques.some(a=>a.estado==='corriendo')?'⚡ EN CURSO':'· listo'));
+  $('objetivo').textContent=d.objetivo||'—';$('stack').textContent=d.stack||'';
   $('estadoLbl').textContent=done?'✓ COMPLETADO':'EN VIVO';
   countTo($('k-vec'),d.kpis.vectores);countTo($('k-def'),d.kpis.defendidos);countTo($('k-hal'),d.kpis.hallazgos);countTo($('k-cob'),d.kpis.cobertura);
   const g=Math.max(0,Math.min(100,d.integridad||0));$('gaugeArc').style.strokeDashoffset=251-251*g/100;$('gaugeVal').textContent=g;$('gaugeVal').style.color=g>=80?'var(--gr)':g>=50?'var(--am)':'var(--rd)';
@@ -360,7 +364,8 @@ async function lanzar(){
   }catch(e){msg.style.color='var(--rd)';msg.textContent='🔴 Sin servidor de control. Arranca: bash dashboard/servir.sh';}
 }
 async function tick(){
-  try{const r=await fetch('estado.json?_='+Date.now());render(await r.json());}catch(e){}
+  try{const r=await fetch('estado.json?_='+Date.now());render(await r.json());}
+  catch(e){const el=$('modo');if(el){el.textContent='🔴 sin conexión al servidor — arranca: bash dashboard/servir.sh';el.style.color='var(--rd)';}}
   try{const m=await fetch('metricas.json?_='+Date.now());M=await m.json();renderMetrics();}catch(e){}
   renderLogs();
 }
