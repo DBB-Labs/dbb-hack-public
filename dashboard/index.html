@@ -137,6 +137,22 @@
   <div class="txt"><b id="v-txt">—</b><div id="v-sub">—</div></div>
 </div>
 
+<div class="panel" style="margin-bottom:14px">
+  <h2>Panel de control · seleccionar y lanzar</h2>
+  <div style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap">
+    <label style="font-size:12px;color:var(--muted)">Objetivo<br>
+      <input id="c-obj" value="kapa21-v2" style="margin-top:4px;background:#0a1017;border:1px solid var(--line);color:var(--tx);border-radius:8px;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:13px;width:180px"></label>
+    <label style="font-size:12px;color:var(--muted)">Nivel<br>
+      <select id="c-niv" style="margin-top:4px;background:#0a1017;border:1px solid var(--line);color:var(--tx);border-radius:8px;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:13px">
+        <option value="low">LOW HACK</option><option value="mid">MID HACK</option>
+        <option value="full" selected>FULL HACK</option><option value="bamf">BAMF HACK</option></select></label>
+    <div style="flex:1;min-width:240px;font-size:12px;color:var(--muted)">Vectores
+      <div id="c-vecs" style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--tx)"></div></div>
+    <button class="btn primary" style="font-size:14px;padding:11px 20px" onclick="lanzar()">🚀 LANZAR ATAQUE</button>
+  </div>
+  <div id="c-msg" style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--cy)"></div>
+</div>
+
 <div class="panel" style="margin-bottom:14px;display:flex;gap:20px;align-items:center;flex-wrap:wrap">
   <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px" id="m-run">en espera</span>
   <span style="margin-left:auto;display:flex;gap:22px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted)">
@@ -319,6 +335,30 @@ function exportar(){
   const w=window.open('','_blank');w.document.write(html);w.document.close();
 }
 let M={serie_cpu:[],serie_net:[],containers:[],totales:{cpu:0,mem_mib:0,rx_rate_kbs:0,tx_rate_kbs:0},n:0};
+const VECTORES=[["A0","Robo externo"],["A1","Aislamiento RLS"],["A2","Escalada"],["A3","Sin 2FA"],["A4","Webhook"],["A5","Crons"],["A6","Fuerza bruta"]];
+// qué vectores incluye cada nivel (los estáticos LOW/MID corren aparte; los live son A0-A6)
+const NIVEL_VEC={low:[],mid:[],full:["A0","A1","A2","A3","A4","A5","A6"],bamf:["A0","A1","A2","A3","A4","A5","A6"]};
+function pintarVectores(){const box=document.getElementById('c-vecs');if(!box)return;
+  const niv=document.getElementById('c-niv').value;const inc=NIVEL_VEC[niv]||[];
+  box.innerHTML=VECTORES.map(v=>{const on=inc.includes(v[0])?'checked':'';
+    return `<label style="display:flex;align-items:center;gap:5px;cursor:pointer"><input type="checkbox" class="cv" value="${v[0]}" ${on}> ${v[0]} ${v[1]}</label>`;}).join('')
+    +(inc.length?'':'<span style="color:var(--muted)">Este nivel corre análisis estático (sin ataque en vivo).</span>');
+}
+document.addEventListener('DOMContentLoaded',()=>{pintarVectores();
+  const sel=document.getElementById('c-niv');if(sel)sel.addEventListener('change',pintarVectores);});
+pintarVectores(); // por si el DOM ya está listo
+async function lanzar(){
+  const obj=(document.getElementById('c-obj').value||'kapa21-v2').trim();
+  const niv=document.getElementById('c-niv').value;
+  let vecs=[...document.querySelectorAll('.cv:checked')].map(c=>c.value);
+  const msg=document.getElementById('c-msg');
+  if(!vecs.length)vecs=NIVEL_VEC[niv]&&NIVEL_VEC[niv].length?NIVEL_VEC[niv]:["A0","A1","A2","A3","A4","A5","A6"]; // default: los del nivel
+  msg.style.color='var(--cy)';msg.textContent='🚀 Lanzando '+niv.toUpperCase()+' contra '+obj+' · '+vecs.length+' vectores…';
+  try{const r=await fetch('/api/lanzar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({objetivo:obj,nivel:niv,vectores:vecs})});
+    const d=await r.json();msg.textContent=d.ok?('✅ Ataque en curso ('+d.vectores+') — mira el radar y el feed.'):'Error al lanzar.';
+    lastCount=0;sigAtk='';sigFinds='';
+  }catch(e){msg.style.color='var(--rd)';msg.textContent='🔴 Sin servidor de control. Arranca: bash dashboard/servir.sh';}
+}
 async function tick(){
   try{const r=await fetch('estado.json?_='+Date.now());render(await r.json());}catch(e){}
   try{const m=await fetch('metricas.json?_='+Date.now());M=await m.json();renderMetrics();}catch(e){}
