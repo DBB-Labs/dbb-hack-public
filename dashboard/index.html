@@ -53,7 +53,8 @@
   .k-cy .n{color:var(--cy)} .k-gr .n{color:var(--gr)} .k-am .n{color:var(--am)} .k-bl .n{color:var(--bl)}
   .grid{display:grid;grid-template-columns:1fr 330px;gap:14px}
   @media(max-width:960px){.grid{grid-template-columns:1fr}}
-  .atk{display:flex;flex-direction:column;gap:9px}
+  .atk{display:flex;flex-direction:column;gap:9px;max-height:430px;overflow-y:auto;padding-right:6px}
+  .atk::-webkit-scrollbar{width:8px} .atk::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
   .card{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:11px;border:1px solid var(--line);background:#0a1017;transition:.3s}
   .card:hover{border-color:#2b3a4d;transform:translateX(2px)}
   .badge{min-width:40px;height:40px;border-radius:9px;display:grid;place-items:center;font-size:16px}
@@ -294,7 +295,8 @@ function render(d){D=d;const done=d.estado==='completado';document.body.classLis
   $('atk').innerHTML=(d.ataques||[]).map(a=>`<div class="card st-${a.estado}" title="${((CATALOGO.find(v=>v.id===a.id)||{}).desc||a.detalle||'').replace(/"/g,'')}" style="cursor:help"><div class="badge">${iconos[a.estado]||'•'}</div>
     <div style="flex:1;min-width:0"><div class="name">${a.id} · ${a.nombre}</div><div class="det">${a.detalle||''}</div>
     <div class="tags"><span class="tag">${a.categoria}</span><span class="tag">OWASP ${a.owasp}</span><span class="tag">ISO ${a.iso}</span></div></div>
-    <div class="status-txt">${stTxt[a.estado]||a.estado}</div></div>`).join('');}
+    <div class="status-txt">${stTxt[a.estado]||a.estado}</div></div>`).join('');
+    const _c=$('atk').querySelector('.st-corriendo');if(_c)_c.scrollIntoView({block:'nearest',behavior:'smooth'});}
   const ev=d.eventos||[],feed=$('feed');
   if(ev.length!==lastCount){ // solo re-render cuando hay evento nuevo → sin parpadeo
     feed.innerHTML=ev.map(e=>`<div class="ev ${e.tipo}"><span class="h">${e.hora}</span><span class="x">${e.texto}</span></div>`).join('')+(done?'<div class="fin-end">— fin del run —</div>':'');
