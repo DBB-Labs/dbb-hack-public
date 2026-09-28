@@ -162,35 +162,44 @@
   <div class="txt"><b id="v-txt">—</b><div id="v-sub">—</div></div>
 </div>
 
-<div class="panel" style="margin-bottom:10px;display:flex;gap:20px;align-items:stretch">
-  <div style="flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-width:110px">
-    <div id="prog-wrap" style="position:relative;width:96px;height:96px">
-      <svg width="96" height="96" viewBox="0 0 96 96">
-        <circle cx="48" cy="48" r="40" stroke="#0a1017" stroke-width="9" fill="none"/>
-        <circle id="prog-ring" cx="48" cy="48" r="40" stroke="url(#pg)" stroke-width="9" fill="none" stroke-linecap="round"
-          stroke-dasharray="251.3" stroke-dashoffset="251.3" transform="rotate(-90 48 48)" style="transition:stroke-dashoffset .5s ease"/>
-        <defs><linearGradient id="pg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f26522"/><stop offset="1" stop-color="#ff9a5a"/></linearGradient></defs>
-      </svg>
-      <div id="prog-pct" style="position:absolute;inset:0;display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:22px;color:var(--cy)">0%</div>
-    </div>
-    <div id="prog-lbl" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-align:center">progreso</div>
-  </div>
-  <div style="flex:1;min-width:0">
+<div class="panel" style="margin-bottom:10px">
   <h2>Panel de control · seleccionar y lanzar</h2>
-  <div style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap">
-    <label style="font-size:12px;color:var(--muted)">Objetivo<br>
-      <select id="c-obj" style="margin-top:4px;background:#0a1017;border:1px solid var(--line);color:var(--tx);border-radius:8px;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:13px;min-width:200px"><option value="kapa21-v2">kapa21-v2</option></select></label>
-    <label style="font-size:12px;color:var(--muted)">Nivel<br>
-      <select id="c-niv" style="margin-top:4px;background:#0a1017;border:1px solid var(--line);color:var(--tx);border-radius:8px;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:13px">
-        <option value="low">LOW HACK</option><option value="mid">MID HACK</option>
-        <option value="full" selected>FULL HACK</option><option value="bamf">BAMF HACK</option></select></label>
-    <div style="flex:1;min-width:240px;font-size:12px;color:var(--muted)">Vectores
-      <div id="c-vecs" style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--tx)"></div></div>
-    <button class="btn primary" style="font-size:14px;padding:11px 20px" onclick="lanzar()">🚀 LANZAR ATAQUE</button>
-    <button class="btn" style="font-size:13px;padding:11px 14px" onclick="limpiar()">🗑 Limpiar</button>
+  <div style="display:grid;grid-template-columns:190px 1fr 240px;gap:22px;align-items:stretch">
+    <div style="display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center">
+      <div id="prog-wrap" style="position:relative;width:150px;height:150px">
+        <svg width="150" height="150" viewBox="0 0 150 150">
+          <circle cx="75" cy="75" r="63" stroke="#0a1017" stroke-width="12" fill="none"/>
+          <circle id="prog-ring" cx="75" cy="75" r="63" stroke="url(#pg)" stroke-width="12" fill="none" stroke-linecap="round" stroke-dasharray="395.8" stroke-dashoffset="395.8" transform="rotate(-90 75 75)" style="transition:stroke-dashoffset .5s ease"/>
+          <defs><linearGradient id="pg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f26522"/><stop offset="1" stop-color="#ff9a5a"/></linearGradient></defs>
+        </svg>
+        <div id="prog-pct" style="position:absolute;inset:0;display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:34px;color:var(--cy)">0%</div>
+      </div>
+      <div id="prog-lbl" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)">progreso</div>
+      <label style="font-size:11px;color:var(--muted);width:100%">OBJETIVO
+        <select id="c-obj" style="margin-top:4px;width:100%;background:#0a1017;border:1px solid var(--line);color:var(--tx);border-radius:8px;padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:13px"><option value="kapa21-v2">kapa21-v2</option></select></label>
+      <label style="font-size:11px;color:var(--muted);width:100%">NIVEL
+        <select id="c-niv" style="margin-top:4px;width:100%;background:#0a1017;border:1px solid var(--line);color:var(--tx);border-radius:8px;padding:9px 10px;font-family:'JetBrains Mono',monospace;font-size:13px">
+          <option value="low">LOW HACK</option><option value="mid">MID HACK</option><option value="full" selected>FULL HACK</option><option value="bamf">BAMF HACK</option></select></label>
+    </div>
+    <div style="min-width:0">
+      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px">Vectores a lanzar</div>
+      <div id="c-vecs" style="display:flex;gap:12px;flex-wrap:wrap;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--tx)"></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;justify-content:space-between">
+      <div style="background:#0a1017;border:1px solid var(--line);border-radius:12px;padding:16px;text-align:center">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px">Última corrida</div>
+        <div style="display:flex;justify-content:space-around;margin-top:12px">
+          <div><div id="ctl-def" style="font-size:34px;font-weight:700;color:var(--gr);font-family:'JetBrains Mono',monospace;line-height:1">0</div><div style="font-size:10px;color:var(--muted);margin-top:4px">DEFENDIDOS</div></div>
+          <div><div id="ctl-hal" style="font-size:34px;font-weight:700;color:var(--am);font-family:'JetBrains Mono',monospace;line-height:1">0</div><div style="font-size:10px;color:var(--muted);margin-top:4px">HALLAZGOS</div></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button class="btn primary" style="font-size:16px;padding:16px;justify-content:center" onclick="lanzar()">🚀 LANZAR ATAQUE</button>
+        <button class="btn" style="justify-content:center;padding:12px" onclick="limpiar()">🗑 Limpiar</button>
+      </div>
+    </div>
   </div>
-  <div id="c-msg" style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--cy)"></div>
-  </div>
+  <div id="c-msg" style="margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--cy)"></div>
 </div>
 
 <div class="panel" style="margin-bottom:10px;display:flex;gap:20px;align-items:center;flex-wrap:wrap">
@@ -381,9 +390,10 @@ function render(d){D=d;const done=d.estado==='completado';document.body.classLis
   // barra de progreso
   const tot=d.total||0,ejec=(d.ataques||[]).filter(a=>a.estado!=='corriendo').length;
   const pct=tot>0?(done?100:Math.min(100,Math.round(ejec/tot*100))):0;
-  $('prog-ring').style.strokeDashoffset=(251.3-251.3*pct/100).toFixed(1);
+  $('prog-ring').style.strokeDashoffset=(395.8-395.8*pct/100).toFixed(1);
   $('prog-pct').textContent=pct+'%';$('prog-pct').style.color=done&&tot?'var(--gr)':(pct>0?'var(--cy)':'var(--muted)');
   $('prog-lbl').textContent=(tot&&!done)?('⚡ '+ejec+'/'+tot):(done&&tot?'✓ finalizado':'progreso');
+  const cd=$('ctl-def'),ch=$('ctl-hal');if(cd)cd.textContent=d.kpis.defendidos;if(ch)ch.textContent=d.kpis.hallazgos;
   countTo($('k-vec'),d.kpis.vectores);countTo($('k-def'),d.kpis.defendidos);countTo($('k-hal'),d.kpis.hallazgos);countTo($('k-cob'),d.kpis.cobertura);
   const g=Math.max(0,Math.min(100,d.integridad||0));$('gaugeArc').style.strokeDashoffset=251-251*g/100;$('gaugeVal').textContent=g;$('gaugeVal').style.color=g>=80?'var(--gr)':g>=50?'var(--am)':'var(--rd)';
   const sev={critica:0,alta:0,media:0,baja:0};(d.ataques||[]).forEach(a=>{if(a.estado==='hallazgo'||a.estado==='vulnerable'){const k=a.severidad||'media';sev[k]=(sev[k]||0)+1;}});
