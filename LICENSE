@@ -1,16 +1,56 @@
-DBB-HACK — Licencia propietaria
+DBB-HACK — Licencia propietaria / Todos los derechos reservados
 Copyright (c) 2026 Felipe Córdova · DBB Labs. Todos los derechos reservados.
 
-Este software, su código fuente, su consola (DBB Labs) y su documentación son
-propiedad exclusiva de DBB Labs. Queda prohibido su uso, copia, modificación,
-distribución, sublicencia o publicación, total o parcial, sin autorización
-escrita y previa del titular. No se concede ninguna licencia implícita.
+================================================================================
+1. TITULARIDAD Y COPYRIGHT EXCLUSIVO
+================================================================================
+Este software (código fuente, la consola "DBB Labs", scripts, documentación y
+demás materiales originales, en adelante "el Software") es una obra bajo
+copyright exclusivo de DBB Labs. Conforme a la práctica estándar (ver
+https://choosealicense.com/no-permission/), NO se concede ninguna licencia:
+por defecto, la obra queda bajo derechos de autor exclusivos de su titular.
 
-Excepciones (conservan su licencia original, no cubiertas por lo anterior):
-- playbooks/strix-source/  → derivado de Strix (usestrix/strix), Apache License 2.0.
-  Ver playbooks/strix-source/LICENSE-APACHE y el archivo NOTICE.
-- marcos/  → catálogos derivados del corpus propio de DBB (ISO 27002, OWASP, WCAG),
-  para uso interno de DBB.
+En Chile, el Software está protegido como programa computacional por la
+Ley N° 17.336 sobre Propiedad Intelectual (art. 3 N° 16). Ningún tercero puede
+usar, copiar, ejecutar, reproducir, distribuir, comunicar públicamente,
+adaptar, transformar ni crear obras derivadas del Software, en todo o en parte,
+sin autorización escrita y previa de DBB Labs. La ausencia de autorización
+expresa significa que NO hay permiso.
 
-Uso autorizado únicamente sobre sistemas propios o con autorización expresa.
-Herramienta de seguridad ofensiva: el uso indebido es responsabilidad de quien la ejecuta.
+================================================================================
+2. USO AUTORIZADO Y RESPONSABILIDAD (HERRAMIENTA DE SEGURIDAD OFENSIVA)
+================================================================================
+El Software realiza pruebas de intrusión (ataques reales) en un laboratorio
+aislado. Su uso queda autorizado ÚNICAMENTE sobre:
+  (a) sistemas de titularidad de quien lo ejecuta, o
+  (b) sistemas para los que se cuente con autorización escrita, expresa y
+      vigente del titular del sistema objetivo.
+
+El uso del Software contra sistemas ajenos sin autorización puede constituir
+delito conforme a la Ley N° 21.459 que establece normas sobre delitos
+informáticos (entre otros: acceso ilícito a un sistema informático,
+interceptación ilícita, y ataque a la integridad de datos o de sistemas).
+Toda responsabilidad civil y penal por un uso indebido recae exclusivamente en
+quien ejecuta el Software; DBB Labs no autoriza ni respalda ningún uso ilícito.
+
+================================================================================
+3. EXCEPCIONES (COMPONENTES DE TERCEROS — CONSERVAN SU LICENCIA)
+================================================================================
+Lo anterior NO cubre estos componentes, que mantienen su licencia de origen:
+  - playbooks/strix-source/  → obra derivada de Strix (usestrix/strix), bajo
+    Apache License 2.0. Ver playbooks/strix-source/LICENSE-APACHE y NOTICE.
+    (En Chile, "obra derivada" según Ley 17.336; se respeta la licencia original.)
+  - marcos/  → catálogos derivados del corpus propio de DBB (ISO 27002, OWASP,
+    WCAG), para uso interno de DBB.
+
+================================================================================
+4. SIN GARANTÍA · LEY APLICABLE
+================================================================================
+EL SOFTWARE SE ENTREGA "TAL CUAL", SIN GARANTÍA DE NINGÚN TIPO. En la máxima
+medida permitida por la ley, DBB Labs no responde por daños derivados de su uso.
+
+Este acuerdo se rige por las leyes de la República de Chile. Cualquier
+controversia se someterá a los tribunales ordinarios de justicia con asiento en
+Santiago de Chile.
+
+Contacto para autorizaciones: DBB Labs.
