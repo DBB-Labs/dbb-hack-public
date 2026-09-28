@@ -291,7 +291,7 @@ function render(d){D=d;const done=d.estado==='completado';document.body.classLis
     $('v-txt').textContent=d.veredicto;$('v-sub').textContent=`${d.kpis.defendidos}/${d.kpis.vectores} vectores defendidos · integridad ${g} · ${done?'run completado':'en curso'}`;}
   const sA=JSON.stringify((d.ataques||[]).map(a=>[a.id,a.estado,a.detalle]));
   if(sA!==sigAtk){sigAtk=sA;
-  $('atk').innerHTML=(d.ataques||[]).map(a=>`<div class="card st-${a.estado}"><div class="badge">${iconos[a.estado]||'•'}</div>
+  $('atk').innerHTML=(d.ataques||[]).map(a=>`<div class="card st-${a.estado}" title="${((CATALOGO.find(v=>v.id===a.id)||{}).desc||a.detalle||'').replace(/"/g,'')}" style="cursor:help"><div class="badge">${iconos[a.estado]||'•'}</div>
     <div style="flex:1;min-width:0"><div class="name">${a.id} · ${a.nombre}</div><div class="det">${a.detalle||''}</div>
     <div class="tags"><span class="tag">${a.categoria}</span><span class="tag">OWASP ${a.owasp}</span><span class="tag">ISO ${a.iso}</span></div></div>
     <div class="status-txt">${stTxt[a.estado]||a.estado}</div></div>`).join('');}
@@ -390,10 +390,14 @@ async function lanzar(){
   }catch(e){msg.style.color='var(--rd)';msg.textContent='🔴 Sin servidor de control. Arranca: bash dashboard/servir.sh';}
 }
 async function toggleInforme(){const el=$('informe');
-  if(el.style.display==='none'){await renderInforme();el.style.display='block';el.scrollIntoView({behavior:'smooth'});}
-  else el.style.display='none';}
-async function renderInforme(){const d=D,g=d.integridad||0;
-  const rows=(d.ataques||[]).map(a=>`<tr><td>${a.id}</td><td>${a.nombre}</td><td>${a.categoria||''}</td><td>OWASP ${a.owasp||'—'} · ISO ${a.iso||'—'}</td><td class="status-txt st-${a.estado}" style="padding:7px 10px">${stTxt[a.estado]||a.estado}</td></tr>`).join('');
+  const abierto=el.style.display!=='none'&&el.style.display!=='';
+  if(abierto){el.style.display='none';return;}
+  el.style.display='block';el.innerHTML='<div style="color:var(--muted)">generando informe…</div>';
+  try{await renderInforme();}catch(e){el.innerHTML='<div style="color:var(--rd)">Error al generar el informe: '+e.message+'</div>';}
+  el.scrollIntoView({behavior:'smooth'});}
+async function renderInforme(){const d=D||{};d.kpis=d.kpis||{vectores:0,defendidos:0,hallazgos:0,cobertura:0};d.severidades=d.severidades||{};d.ataques=d.ataques||[];const g=d.integridad||0;
+  const DESC={};(CATALOGO||[]).forEach(v=>DESC[v.id]=v.desc||'');
+  const rows=(d.ataques||[]).map(a=>`<tr title="${(DESC[a.id]||a.detalle||'').replace(/"/g,'')}" style="cursor:help"><td>${a.id} <span style="color:var(--muted)">ⓘ</span></td><td>${a.nombre}</td><td>${a.categoria||''}</td><td>OWASP ${a.owasp||'—'} · ISO ${a.iso||'—'}</td><td class="status-txt st-${a.estado}" style="padding:7px 10px">${stTxt[a.estado]||a.estado}</td></tr>`).join('');
   const fs=(d.ataques||[]).filter(a=>a.estado==='hallazgo'||a.estado==='vulnerable');
   const finds=fs.length?fs.map(a=>{const sv=a.severidad||'media';return `<div class="find sev-${sv}" style="margin:8px 0"><div class="top"><span class="chip ${sv}">${sv}</span><span class="h3">${a.id} · ${a.nombre}</span></div><div class="det">${a.detalle||''}</div>${a.recomendacion?`<div class="rec"><b>Recomendación:</b> ${a.recomendacion}</div>`:''}${a.prompt_fix?`<div class="promptbox"><pre>${(a.prompt_fix||'').replace(/</g,'&lt;')}</pre></div>`:''}</div>`;}).join(''):'<div class="empty">Sin hallazgos: todas las defensas resistieron. 🛡️</div>';
   let hist='';try{const h=await(await fetch('historial.json?_='+Date.now())).json();
