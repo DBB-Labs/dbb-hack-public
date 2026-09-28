@@ -123,9 +123,19 @@
   <div class="txt"><b id="v-txt">—</b><div id="v-sub">—</div></div>
 </div>
 
+<div class="panel" style="margin-bottom:14px;display:flex;gap:20px;align-items:center;flex-wrap:wrap">
+  <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px" id="m-run">en espera</span>
+  <span style="margin-left:auto;display:flex;gap:22px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted)">
+    <span>🖥️ <b style="color:var(--tx)" id="m-cont">0</b> contenedores</span>
+    <span>⚙️ CPU <b style="color:var(--cy)" id="m-cpu">0%</b></span>
+    <span>🧠 <b style="color:var(--tx)" id="m-mem">0 MiB</b></span>
+    <span>🌐 <b style="color:var(--cy)" id="m-net">0 KB/s</b></span>
+  </span>
+</div>
+
 <div class="cmd">
-  <div class="panel"><h2><span class="live"></span>Osciloscopio · señal de actividad</h2><canvas id="osc" class="viz" height="180"></canvas></div>
-  <div class="panel"><h2><span class="live"></span>Radar de vectores</h2><canvas id="radar" class="viz" height="180"></canvas></div>
+  <div class="panel"><h2><span class="live"></span>Osciloscopio · CPU real del lab</h2><canvas id="osc" class="viz" height="180"></canvas></div>
+  <div class="panel"><h2><span class="live"></span>Radar · contenedores del lab (real)</h2><canvas id="radar" class="viz" height="180"></canvas></div>
   <div class="panel"><h2>Integridad de defensa</h2>
     <div class="gauge-wrap"><div class="gauge">
       <svg width="180" height="104" viewBox="0 0 200 120">
@@ -136,7 +146,7 @@
   </div>
 </div>
 
-<div class="panel" style="margin-bottom:14px"><h2><span class="live"></span>Actividad de red · en tiempo real</h2><canvas id="activity" class="viz" height="90"></canvas></div>
+<div class="panel" style="margin-bottom:14px"><h2><span class="live"></span>Actividad de red · tráfico real del lab</h2><canvas id="activity" class="viz" height="90"></canvas></div>
 
 <div class="kpis">
   <div class="panel kpi k-cy"><div class="n" id="k-vec">0</div><div class="l">Vectores</div></div>
@@ -172,31 +182,36 @@ function drawOsc(){const w=osc.clientWidth,h=180;ox.clearRect(0,0,w,h);
   ox.strokeStyle='rgba(34,211,238,.08)';ox.lineWidth=1;
   for(let gx=0;gx<w;gx+=w/16){ox.beginPath();ox.moveTo(gx,0);ox.lineTo(gx,h);ox.stroke();}
   for(let gy=0;gy<h;gy+=h/6){ox.beginPath();ox.moveTo(0,gy);ox.lineTo(w,gy);ox.stroke();}
-  const amp=14+energy*48;
-  function trace(color,freq,ph,a,glow){ox.beginPath();ox.strokeStyle=color;ox.lineWidth=2;ox.shadowBlur=glow;ox.shadowColor=color;
-    for(let x=0;x<=w;x++){const t=x/w*Math.PI*freq+ph;const n=(Math.random()-.5)*energy*8;const y=h/2+Math.sin(t)*a*Math.sin(t*.5+ph*.3)+n;x===0?ox.moveTo(x,y):ox.lineTo(x,y);}ox.stroke();ox.shadowBlur=0;}
-  trace('rgba(34,211,238,.9)',9,oscPhase,amp,10);trace('rgba(232,121,249,.5)',14,-oscPhase*1.4,amp*.5,6);oscPhase+=0.05+energy*0.12;}
+  const s=M.serie_cpu||[];const max=Math.max(20,Math.max(...s,0));const step=w/Math.max(1,s.length-1);
+  ox.beginPath();ox.strokeStyle='rgba(34,211,238,.95)';ox.lineWidth=2;ox.shadowBlur=10;ox.shadowColor='#22d3ee';
+  s.forEach((v,i)=>{const y=h-(v/max)*(h-16)-8;i?ox.lineTo(i*step,y):ox.moveTo(0,y);});ox.stroke();ox.shadowBlur=0;
+  const cur=s.length?s[s.length-1]:0;ox.fillStyle='#22d3ee';ox.font='600 13px "JetBrains Mono",monospace';ox.fillText('CPU '+cur.toFixed(1)+'% · real',10,18);}
 /* radar */
 const radar=$('radar');let rx=radar.getContext('2d'),sweep=0;
 function drawRadar(){const w=radar.clientWidth,h=180,cx=w/2,cy=h/2,R=Math.min(cx,cy)-6;rx.clearRect(0,0,w,h);
   rx.strokeStyle='rgba(52,211,153,.18)';rx.lineWidth=1;
   for(let i=1;i<=3;i++){rx.beginPath();rx.arc(cx,cy,R*i/3,0,7);rx.stroke();}
   rx.beginPath();rx.moveTo(cx-R,cy);rx.lineTo(cx+R,cy);rx.moveTo(cx,cy-R);rx.lineTo(cx,cy+R);rx.stroke();
-  const g=rx.createRadialGradient(cx,cy,0,cx,cy,R);g.addColorStop(0,'rgba(34,211,238,.35)');g.addColorStop(1,'rgba(34,211,238,0)');
+  const g=rx.createRadialGradient(cx,cy,0,cx,cy,R);g.addColorStop(0,'rgba(34,211,238,.30)');g.addColorStop(1,'rgba(34,211,238,0)');
   rx.fillStyle=g;rx.beginPath();rx.moveTo(cx,cy);rx.arc(cx,cy,R,sweep,sweep+0.5);rx.closePath();rx.fill();
-  const col={defendido:'#34d399',hallazgo:'#fbbf24',vulnerable:'#f87171',corriendo:'#22d3ee'};const n=D.ataques.length||1;
-  D.ataques.forEach((a,i)=>{const ang=i/n*Math.PI*2,rr=R*(0.45+0.4*((i%3)/3+.1));const bx=cx+Math.cos(ang)*rr,by=cy+Math.sin(ang)*rr;
-    const near=Math.abs((sweep%(Math.PI*2))-((ang+Math.PI*2)%(Math.PI*2)));const flash=near<0.35||Math.abs(near-Math.PI*2)<0.35;
-    rx.fillStyle=col[a.estado]||'#728294';rx.shadowBlur=flash?16:5;rx.shadowColor=rx.fillStyle;rx.beginPath();rx.arc(bx,by,flash?5.5:3.2,0,7);rx.fill();rx.shadowBlur=0;
-    if(flash){rx.strokeStyle=rx.fillStyle;rx.globalAlpha=.5;rx.beginPath();rx.arc(bx,by,10,0,7);rx.stroke();rx.globalAlpha=1;}});
-  sweep+=0.03;}
+  const cs=M.containers||[];const n=cs.length||1;const maxc=Math.max(1,Math.max(...cs.map(c=>c.cpu),0));
+  cs.forEach((c,i)=>{const ang=i/n*Math.PI*2;const rr=R*(0.30+0.6*(1-c.cpu/(maxc*1.3+1)));
+    const bx=cx+Math.cos(ang)*rr,by=cy+Math.sin(ang)*rr;
+    const near=Math.abs((sweep%(Math.PI*2))-((ang+Math.PI*2)%(Math.PI*2)));const flash=near<0.4||Math.abs(near-Math.PI*2)<0.4;
+    const size=3+Math.min(8,c.cpu*1.4);rx.fillStyle=c.cpu>4?'#fbbf24':'#34d399';rx.shadowBlur=flash?16:6;rx.shadowColor=rx.fillStyle;
+    rx.beginPath();rx.arc(bx,by,flash?size+2:size,0,7);rx.fill();rx.shadowBlur=0;
+    if(flash){rx.fillStyle='#cfe';rx.font='9px "JetBrains Mono",monospace';rx.fillText(c.name.slice(0,10),bx+8,by+3);}});
+  rx.fillStyle='#728294';rx.font='10px "JetBrains Mono",monospace';rx.fillText((M.n||0)+' contenedores · real',8,14);
+  sweep+=0.028;}
 /* actividad */
 const act=$('activity');let ax=act.getContext('2d'),series=[];
-function drawAct(){const w=act.clientWidth,h=90;ax.clearRect(0,0,w,h);series.push(Math.max(0,energy*h*0.8+Math.random()*7+3));if(series.length>w/3)series.shift();
+function drawAct(){const w=act.clientWidth,h=90;ax.clearRect(0,0,w,h);
+  const s=M.serie_net||[];const max=Math.max(10,Math.max(...s,0));const step=w/Math.max(1,s.length-1);
   ax.strokeStyle='rgba(96,165,250,.08)';for(let gy=0;gy<h;gy+=h/4){ax.beginPath();ax.moveTo(0,gy);ax.lineTo(w,gy);ax.stroke();}
-  const step=w/Math.max(1,series.length);const grad=ax.createLinearGradient(0,0,0,h);grad.addColorStop(0,'rgba(34,211,238,.5)');grad.addColorStop(1,'rgba(34,211,238,0)');
-  ax.beginPath();ax.moveTo(0,h);series.forEach((v,i)=>ax.lineTo(i*step,h-v));ax.lineTo(w,h);ax.closePath();ax.fillStyle=grad;ax.fill();
-  ax.beginPath();series.forEach((v,i)=>{const y=h-v;i===0?ax.moveTo(0,y):ax.lineTo(i*step,y);});ax.strokeStyle='#22d3ee';ax.lineWidth=1.5;ax.shadowBlur=8;ax.shadowColor='#22d3ee';ax.stroke();ax.shadowBlur=0;}
+  const grad=ax.createLinearGradient(0,0,0,h);grad.addColorStop(0,'rgba(34,211,238,.5)');grad.addColorStop(1,'rgba(34,211,238,0)');
+  ax.beginPath();ax.moveTo(0,h);s.forEach((v,i)=>ax.lineTo(i*step,h-(v/max)*(h-12)));ax.lineTo(Math.max(0,(s.length-1))*step,h);ax.closePath();ax.fillStyle=grad;ax.fill();
+  ax.beginPath();s.forEach((v,i)=>{const y=h-(v/max)*(h-12);i===0?ax.moveTo(0,y):ax.lineTo(i*step,y);});ax.strokeStyle='#22d3ee';ax.lineWidth=1.5;ax.shadowBlur=8;ax.shadowColor='#22d3ee';ax.stroke();ax.shadowBlur=0;
+  const cur=s.length?s[s.length-1]:0;ax.fillStyle='#22d3ee';ax.font='600 12px "JetBrains Mono",monospace';ax.fillText(Math.round(cur)+' KB/s · real',10,16);}
 function loop(){energy*=0.94;drawOsc();drawRadar();drawAct();requestAnimationFrame(loop);}
 addEventListener('resize',()=>{ox=fitCanvas(osc);rx=fitCanvas(radar);ax=fitCanvas(act);});
 ox=fitCanvas(osc);rx=fitCanvas(radar);ax=fitCanvas(act);loop();
@@ -268,7 +283,21 @@ function exportar(){
     <script>window.onload=()=>window.print()<\/script></body></html>`;
   const w=window.open('','_blank');w.document.write(html);w.document.close();
 }
-async function tick(){try{const r=await fetch('estado.json?_='+Date.now());render(await r.json());}catch(e){}}
+let M={serie_cpu:[],serie_net:[],containers:[],totales:{cpu:0,mem_mib:0,rx_rate_kbs:0,tx_rate_kbs:0},n:0};
+async function tick(){
+  try{const r=await fetch('estado.json?_='+Date.now());render(await r.json());}catch(e){}
+  try{const m=await fetch('metricas.json?_='+Date.now());M=await m.json();renderMetrics();}catch(e){}
+}
+function renderMetrics(){const t=M.totales||{};
+  $('m-cont').textContent=(M.n||0);
+  $('m-cpu').textContent=(t.cpu||0)+'%';
+  $('m-mem').textContent=Math.round((t.mem_mib||0))+' MiB';
+  $('m-net').textContent=Math.round((t.rx_rate_kbs||0)+(t.tx_rate_kbs||0))+' KB/s';
+  const corr=(D.ataques||[]).find(a=>a.estado==='corriendo');
+  const done=D.estado==='completado';
+  $('m-run').textContent=corr?('⚡ '+corr.nombre):(done?'✓ análisis completado':'en espera');
+  $('m-run').style.color=corr?'var(--cy)':(done?'var(--gr)':'var(--muted)');
+}
 tick();setInterval(tick,1000);
 </script>
 </body>
