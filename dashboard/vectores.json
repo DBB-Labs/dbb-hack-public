@@ -1,0 +1,45 @@
+{
+  "capas": {
+    "low":  "LOW HACK · estático, rápido, cualquier repo",
+    "mid":  "MID HACK · estático + revisión por playbooks",
+    "full": "FULL HACK · ataque en vivo (laboratorio aislado)",
+    "bamf": "BAMF HACK · exhaustivo, adversarial, cumplimiento"
+  },
+  "vectores": [
+    {"id":"S1","capa":"low","nombre":"Secretos en el código","cat":"Secretos","owasp":"API8","iso":"A.8.24","status":"implementado","desc":"gitleaks sobre el repo y todo el historial de git"},
+    {"id":"S2","capa":"low","nombre":"Dependencias vulnerables","cat":"Supply-chain","owasp":"API8","iso":"A.8.8","status":"implementado","desc":"npm audit / osv-scanner de dependencias"},
+    {"id":"S3","capa":"low","nombre":"Patrones inseguros (SAST)","cat":"Código","owasp":"API8","iso":"A.8.28","status":"implementado","desc":"semgrep security-audit + owasp sobre el código"},
+
+    {"id":"M1","capa":"mid","nombre":"Revisión de autorización (código)","cat":"Authz","owasp":"API5","iso":"A.8.2","status":"manual","desc":"Revisión guiada por playbooks de cada Server Action"},
+    {"id":"M2","capa":"mid","nombre":"Completitud de RLS","cat":"Supabase","owasp":"API1","iso":"A.8.3","status":"manual","desc":"Cada tabla con RLS activa y políticas por operación"},
+
+    {"id":"A0","capa":"full","nombre":"Robo externo sin cuenta","cat":"Sin cuenta","owasp":"API1/API3","iso":"A.8.3","status":"implementado","desc":"Leer tablas/archivos con la llave pública, sin login"},
+    {"id":"A1","capa":"full","nombre":"Aislamiento entre clientes","cat":"IDOR","owasp":"API1 BOLA","iso":"A.8.3","status":"implementado","desc":"Que un cliente lea datos de otro (RLS)"},
+    {"id":"A2","capa":"full","nombre":"Escalada cliente a operador","cat":"Authz","owasp":"API5 BFLA","iso":"A.8.2","status":"implementado","desc":"Cliente ejecuta acciones de operador"},
+    {"id":"A3","capa":"full","nombre":"Operador sin 2FA mueve dinero","cat":"Auth","owasp":"ASVS V2","iso":"A.8.5","status":"implementado","desc":"Capacidad sin segundo factor confirmado"},
+    {"id":"A4","capa":"full","nombre":"Webhook con firma falsa","cat":"Integridad","owasp":"API8","iso":"A.8.26","status":"implementado","desc":"Fingir un aviso de pago con firma inválida"},
+    {"id":"A5","capa":"full","nombre":"Crons sin secreto","cat":"Auth","owasp":"API2","iso":"A.8.5","status":"implementado","desc":"Disparar barridos de dinero sin el secreto"},
+    {"id":"A6","capa":"full","nombre":"Fuerza bruta de login","cat":"Anti-automación","owasp":"API4","iso":"A.8.5","status":"implementado","desc":"Intentos de login sin freno"},
+    {"id":"A7","capa":"full","nombre":"GraphQL introspection","cat":"Exposición","owasp":"API9","iso":"A.8.3","status":"implementado","desc":"Introspección del esquema GraphQL como anónimo"},
+    {"id":"A8","capa":"full","nombre":"Open redirect","cat":"Web","owasp":"API1","iso":"A.8.26","status":"implementado","desc":"Redirección abierta a dominio externo"},
+    {"id":"A9","capa":"full","nombre":"Enumeración de usuarios","cat":"Auth","owasp":"API3","iso":"A.8.5","status":"implementado","desc":"Login/registro revela si un correo existe"},
+    {"id":"A10","capa":"full","nombre":"Cabeceras de seguridad","cat":"Config","owasp":"API8","iso":"A.8.26","status":"implementado","desc":"CSP, HSTS, X-Frame, X-Content-Type, Referrer, Permissions"},
+
+    {"id":"B1","capa":"bamf","nombre":"Carrera de doble-pago","cat":"Race","owasp":"API6","iso":"A.8.26","status":"planificado","desc":"Dos pagos concurrentes del mismo retiro"},
+    {"id":"B2","capa":"bamf","nombre":"Penny-drop / montos negativos","cat":"Lógica","owasp":"API6","iso":"A.8.26","status":"planificado","desc":"Montos negativos/overflow en amount_minor"},
+    {"id":"B3","capa":"bamf","nombre":"Overdraw concurrente","cat":"Race","owasp":"API6","iso":"A.8.26","status":"planificado","desc":"Dos retiros que suman más que el saldo"},
+    {"id":"B4","capa":"bamf","nombre":"Mass-assignment","cat":"Lógica","owasp":"API6","iso":"A.8.28","status":"planificado","desc":"Fijar campos prohibidos (role, is_system, montos)"},
+    {"id":"B5","capa":"bamf","nombre":"IDOR profundo (todos los recursos)","cat":"IDOR","owasp":"API1","iso":"A.8.3","status":"planificado","desc":"Órdenes, documentos, expedientes por id ajeno"},
+    {"id":"B6","capa":"bamf","nombre":"Inyección SQL/NoSQL","cat":"Inyección","owasp":"API8","iso":"A.8.28","status":"planificado","desc":"Entradas maliciosas en cada parámetro"},
+    {"id":"B7","capa":"bamf","nombre":"SSRF","cat":"Web","owasp":"API7","iso":"A.8.26","status":"planificado","desc":"Forzar peticiones salientes del servidor"},
+    {"id":"B8","capa":"bamf","nombre":"Path traversal / LFI","cat":"Web","owasp":"API1","iso":"A.8.26","status":"planificado","desc":"Subida/descarga de archivos fuera de ruta"},
+    {"id":"B9","capa":"bamf","nombre":"Subida de archivos maliciosos","cat":"Web","owasp":"API8","iso":"A.8.26","status":"planificado","desc":"Tipo/tamaño/contenido en los buckets"},
+    {"id":"B10","capa":"bamf","nombre":"XSS (reflejado/almacenado/DOM)","cat":"Web","owasp":"API8","iso":"A.8.28","status":"planificado","desc":"Inyección de scripts en campos renderizados"},
+    {"id":"B11","capa":"bamf","nombre":"CSRF en Server Actions","cat":"Web","owasp":"API8","iso":"A.8.26","status":"planificado","desc":"Confirmar el token en cada mutación"},
+    {"id":"B12","capa":"bamf","nombre":"Gestión de sesión","cat":"Auth","owasp":"API2","iso":"A.8.5","status":"planificado","desc":"Fijación, expiración, invalidación, reuso"},
+    {"id":"B13","capa":"bamf","nombre":"OWASP ASVS L2/L3","cat":"Cobertura","owasp":"ASVS","iso":"A.8.26","status":"planificado","desc":"Recorrer los 345 requisitos ASVS"},
+    {"id":"B14","capa":"bamf","nombre":"OWASP WSTG","cat":"Cobertura","owasp":"WSTG","iso":"A.8.26","status":"planificado","desc":"Las 97 pruebas web como checklist"},
+    {"id":"B15","capa":"bamf","nombre":"DAST (nuclei/ZAP)","cat":"Dinámico","owasp":"API8","iso":"A.8.8","status":"planificado","desc":"Escaneo dinámico contra la app corriendo"},
+    {"id":"B16","capa":"bamf","nombre":"Mapa de cumplimiento","cat":"Cumplimiento","owasp":"—","iso":"NCG502/21719","status":"planificado","desc":"NCG 502 E.4.1 (CMF) + Ley 21.719"}
+  ]
+}

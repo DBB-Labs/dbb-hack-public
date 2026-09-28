@@ -61,6 +61,8 @@
   .st-hallazgo .badge{background:rgba(251,191,36,.14);color:var(--am);border:1px solid rgba(251,191,36,.3)}
   .st-vulnerable .badge{background:rgba(248,113,113,.14);color:var(--rd);border:1px solid rgba(248,113,113,.3);animation:blink 1.8s ease-in-out infinite}
   .st-corriendo .badge{background:rgba(242,101,34,.14);color:var(--cy);border:1px solid rgba(242,101,34,.35);animation:blink 1.6s ease-in-out infinite}
+  .st-planificado .badge{background:#0e151d;color:var(--muted);border:1px solid var(--line)} .st-planificado{opacity:.6}
+  .st-manual .badge{background:rgba(96,165,250,.12);color:var(--bl);border:1px solid rgba(96,165,250,.3)}
   .card .name{font-weight:600;font-size:14px}
   .card .det{color:var(--muted);font-size:12px;margin-top:3px;line-height:1.4}
   .tags{display:flex;gap:5px;margin-top:6px;flex-wrap:wrap}
@@ -269,8 +271,8 @@ function loop(){energy*=0.94;drawOsc();drawRadar();drawAct();requestAnimationFra
 addEventListener('resize',()=>{ox=fitCanvas(osc);rx=fitCanvas(radar);ax=fitCanvas(act);});
 ox=fitCanvas(osc);rx=fitCanvas(radar);ax=fitCanvas(act);loop();
 
-const iconos={defendido:'🛡️',hallazgo:'⚠️',vulnerable:'🔴',corriendo:'⚡'};
-const stTxt={defendido:'Defendido',hallazgo:'Hallazgo',vulnerable:'Vulnerable',corriendo:'Corriendo'};
+const iconos={defendido:'🛡️',hallazgo:'⚠️',vulnerable:'🔴',corriendo:'⚡',planificado:'⏳',manual:'🔍'};
+const stTxt={defendido:'Defendido',hallazgo:'Hallazgo',vulnerable:'Vulnerable',corriendo:'Corriendo',planificado:'Planificado',manual:'Manual'};
 function render(d){D=d;const done=d.estado==='completado';document.body.classList.toggle('done',done);
   const base=(d.modo||'DBB-HACK').replace(/\s*·\s*EN VIVO$/i,'');
   const mel=$('modo');mel.style.color='var(--muted)';
@@ -352,24 +354,31 @@ const INFO={
   "kong":"Kong — API gateway: la puerta de entrada que enruta a todos los servicios.",
   "studio":"Studio — el panel visual de Supabase (127.0.0.1:54323).",
   "inbucket":"Mailpit — buzón de correo de PRUEBA: captura los emails localmente."};
-const VECTORES=[["A0","Robo externo"],["A1","Aislamiento RLS"],["A2","Escalada"],["A3","Sin 2FA"],["A4","Webhook"],["A5","Crons"],["A6","Fuerza bruta"]];
-// qué vectores incluye cada nivel (los estáticos LOW/MID corren aparte; los live son A0-A6)
-const NIVEL_VEC={low:[],mid:[],full:["A0","A1","A2","A3","A4","A5","A6"],bamf:["A0","A1","A2","A3","A4","A5","A6"]};
+let CATALOGO=[];
+const CAPA_SCOPE={low:["low"],mid:["low","mid"],full:["low","mid","full"],bamf:["low","mid","full","bamf"]};
+const CAPA_LBL={low:"LOW · estático",mid:"MID · revisión",full:"FULL · en vivo",bamf:"BAMF · exhaustivo"};
+async function cargarCatalogo(){try{const r=await fetch('vectores.json?_='+Date.now());CATALOGO=(await r.json()).vectores||[];}catch(e){}pintarVectores();}
 function pintarVectores(){const box=document.getElementById('c-vecs');if(!box)return;
-  const niv=document.getElementById('c-niv').value;const inc=NIVEL_VEC[niv]||[];
-  box.innerHTML=VECTORES.map(v=>{const on=inc.includes(v[0])?'checked':'';
-    return `<label style="display:flex;align-items:center;gap:5px;cursor:pointer"><input type="checkbox" class="cv" value="${v[0]}" ${on}> ${v[0]} ${v[1]}</label>`;}).join('')
-    +(inc.length?'':'<span style="color:var(--muted)">Este nivel corre análisis estático (sin ataque en vivo).</span>');
+  const niv=(document.getElementById('c-niv')||{}).value||'full';const scope=CAPA_SCOPE[niv]||['full'];
+  if(!CATALOGO.length){box.innerHTML='<span style="color:var(--muted)">cargando catálogo…</span>';return;}
+  let html='';
+  scope.forEach(cap=>{const vs=CATALOGO.filter(v=>v.capa===cap);if(!vs.length)return;
+    html+=`<div style="width:100%;color:var(--muted);font-size:10px;letter-spacing:1px;margin:6px 0 2px">${CAPA_LBL[cap]||cap}</div><div style="display:flex;gap:12px;flex-wrap:wrap">`;
+    html+=vs.map(v=>{const impl=v.status==='implementado';const chk=impl?'checked':'';const dis=impl?'':'disabled';
+      const tag=v.status==='planificado'?' <span style="color:var(--muted)">⏳</span>':(v.status==='manual'?' <span style="color:var(--bl)">🔍</span>':'');
+      return `<label title="${(v.desc||'').replace(/"/g,'')}" style="display:flex;align-items:center;gap:5px;cursor:${impl?'pointer':'help'};opacity:${impl?1:.5}"><input type="checkbox" class="cv" value="${v.id}" ${chk} ${dis}> ${v.id} ${v.nombre}${tag}</label>`;}).join('');
+    html+='</div>';});
+  box.innerHTML=html;
 }
-document.addEventListener('DOMContentLoaded',()=>{pintarVectores();
+document.addEventListener('DOMContentLoaded',()=>{cargarCatalogo();
   const sel=document.getElementById('c-niv');if(sel)sel.addEventListener('change',pintarVectores);});
-pintarVectores(); // por si el DOM ya está listo
+cargarCatalogo();
 async function lanzar(){
   const obj=(document.getElementById('c-obj').value||'kapa21-v2').trim();
   const niv=document.getElementById('c-niv').value;
   let vecs=[...document.querySelectorAll('.cv:checked')].map(c=>c.value);
   const msg=document.getElementById('c-msg');
-  if(!vecs.length)vecs=NIVEL_VEC[niv]&&NIVEL_VEC[niv].length?NIVEL_VEC[niv]:["A0","A1","A2","A3","A4","A5","A6"]; // default: los del nivel
+  if(!vecs.length){msg.style.color='var(--am)';msg.textContent='Selecciona al menos un vector implementado.';return;}
   msg.style.color='var(--cy)';msg.textContent='🚀 Lanzando '+niv.toUpperCase()+' contra '+obj+' · '+vecs.length+' vectores…';
   try{const r=await fetch('/api/lanzar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({objetivo:obj,nivel:niv,vectores:vecs})});
     const d=await r.json();msg.textContent=d.ok?('✅ Ataque en curso ('+d.vectores+') — mira el radar y el feed.'):'Error al lanzar.';
