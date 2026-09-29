@@ -166,8 +166,12 @@ else
   for pv in B1 B2 B3 B4 B5 B6 B12; do want "$pv" && np "$pv" "$pv en vivo" "BAMF" "-" "-" "Lab de $OBJ no montado — no probado."; done
 fi
 
+# ── BAMF estáticos (sobre el repo, corren con o sin lab) ──
+want B10 && runp B10 "XSS (sinks de HTML crudo)" "Web" "API8" "A.8.28" b10-xss
+want B11 && runp B11 "CSRF en Server Actions" "Web" "API8" "A.8.26" b11-csrf
+
 # ── MID / BAMF aun planificados: se muestran, no se falsean ──
-for pv in M1 M2 B7 B8 B9 B10 B11 B13 B14 B15 B16; do
+for pv in M1 M2 B7 B8 B9 B13 B14 B15 B16; do
   want "$pv" && em ataque "$pv" planificado "$pv" "Pendiente" "—" "—" "Vector en el catalogo, aun no implementado"
 done
 

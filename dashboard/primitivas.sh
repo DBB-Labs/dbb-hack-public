@@ -225,5 +225,24 @@ case "$PRIM" in
     r=$(printf "begin; update fin.account set balance_total_minor=-1 where owner_kind<>'sistema'; rollback;" | run_sql 2>&1)
     echo "$r" | grep -qi 'no_negativo\|violates check' && out defendido "sobregiro bloqueado por CHECK de saldo no-negativo" "{\"cuentas\":$n}" || out vulnerable "se pudo dejar una cuenta en saldo NEGATIVO" "{\"cuentas\":$n}";;
 
+  # B10 XSS: en React el riesgo real es dangerouslySetInnerHTML con __html de input de
+  # usuario. Se cuentan los sinks JSX reales; si hay, se marca para revisión (no vulnerable
+  # a ciegas). El cerebro revisa si el __html es constante (seguro) o viene de input.
+  b10-xss)
+    [ -d "$REPO/src" ] || { out no-probado "sin carpeta src/" "{}"; exit 0; }
+    n=$(grep -rn "dangerouslySetInnerHTML={{" "$REPO/src" 2>/dev/null | grep -vc "__tests__")
+    if [ "${n:-0}" = "0" ]; then out defendido "sin sinks de HTML crudo (React escapa por defecto)" "{\"sinks\":0}"
+    else out hallazgo "$n sinks de HTML crudo — revisar que __html no venga de input de usuario" "{\"sinks\":$n}"; fi;;
+
+  # B11 CSRF en Server Actions: Next 14+ valida same-origin por defecto. Se debilita solo si
+  # serverActions.allowedOrigins trae comodines. Se revisa versión + config.
+  b11-csrf)
+    [ -f "$REPO/package.json" ] || { out no-probado "sin package.json" "{}"; exit 0; }
+    maj=$(grep -E '"next":' "$REPO/package.json" | sed -E 's/[^0-9]*([0-9]+).*/\1/')
+    wild=$(grep -rn "allowedOrigins" "$REPO"/next.config* 2>/dev/null | grep -E '\*|0\.0\.0\.0' )
+    if [ -n "$wild" ]; then out hallazgo "allowedOrigins con comodín debilita la protección CSRF" "{\"config\":$(python3 -c 'import json,sys;print(json.dumps(sys.argv[1][:160]))' "$wild")}"
+    elif [ -n "$maj" ] && [ "$maj" -ge 14 ]; then out defendido "Next $maj: Server Actions same-origin por defecto, sin orígenes permitidos extra" "{\"next\":$maj}"
+    else out no-probado "no se pudo confirmar la versión de Next (>=14)" "{}"; fi;;
+
   *) out no-probado "primitiva desconocida: $PRIM" "{}"; exit 2;;
 esac

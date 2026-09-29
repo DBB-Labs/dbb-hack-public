@@ -263,7 +263,7 @@
       "cat": "Web",
       "owasp": "API8",
       "iso": "A.8.28",
-      "status": "planificado",
+      "status": "implementado",
       "desc": "Inyección de scripts en campos renderizados"
     },
     {
@@ -273,7 +273,7 @@
       "cat": "Web",
       "owasp": "API8",
       "iso": "A.8.26",
-      "status": "planificado",
+      "status": "implementado",
       "desc": "Confirmar el token en cada mutación"
     },
     {
