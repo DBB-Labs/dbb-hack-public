@@ -270,5 +270,32 @@ case "$PRIM" in
     if [ -z "$bad" ]; then out defendido "todos los buckets limitan tamaño y tipo de archivo" "{}"
     else out hallazgo "buckets sin límite de tamaño o de tipo de archivo" "{\"buckets\":\"$bad\"}"; fi;;
 
+  # B13 ASVS: cobertura honesta (no cumple 345 requisitos; mapea por capítulo). Estado manual.
+  b13-asvs)
+    doc="$D/../estandares/cobertura-asvs.md"
+    [ -f "$doc" ] && out manual "cobertura ASVS: los 14 capítulos con señal automática; requisitos L2/L3 finos → revisión manual (ver estandares/cobertura-asvs.md)" "{\"doc\":\"estandares/cobertura-asvs.md\",\"capitulos\":14}" || out no-probado "falta el documento de cobertura ASVS" "{}";;
+
+  # B14 WSTG: cobertura honesta (no 97 pruebas; mapea por categoría). Estado manual.
+  b14-wstg)
+    doc="$D/../estandares/cobertura-wstg.md"
+    [ -f "$doc" ] && out manual "cobertura WSTG: las 11 categorías con señal automática; detalle de las 97 pruebas → revisión manual (ver estandares/cobertura-wstg.md)" "{\"doc\":\"estandares/cobertura-wstg.md\",\"categorias\":11}" || out no-probado "falta el documento de cobertura WSTG" "{}";;
+
+  # B15 DAST: sin nuclei/ZAP → escaneo dinámico propio: sondea rutas sensibles en la app viva.
+  b15-dast)
+    curl -s -o /dev/null --max-time 4 "$APP/" 2>/dev/null || { out no-probado "app no responde en :3000 — no se pudo escanear" "{}"; exit 0; }
+    expuestas=""
+    for p in ".env" ".git/config" ".git/HEAD" "config.json" "backup.sql" ".DS_Store" "server-status" "actuator/health" "api/swagger.json" "phpinfo.php"; do
+      code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 4 "$APP/$p" 2>/dev/null)
+      [ "$code" = "200" ] && expuestas="$expuestas /$p"
+    done
+    # security.txt debería existir (buena práctica), no cuenta como exposición
+    if [ -z "$expuestas" ]; then out defendido "DAST básico: ninguna ruta sensible expuesta (probadas 10)" "{\"probadas\":10}"
+    else out hallazgo "DAST básico: rutas sensibles accesibles" "{\"rutas\":\"$expuestas\"}"; fi;;
+
+  # B16 cumplimiento: mapa CMF NCG 502 + Ley 21.719. Estado manual (incluye controles no técnicos).
+  b16-cumplimiento)
+    doc="$D/../estandares/cumplimiento-cmf.md"
+    [ -f "$doc" ] && out manual "mapa de cumplimiento CMF NCG 502 E.4.1 + Ley 21.719: evidencia técnica lista; certificación y controles no técnicos → tercero (ver estandares/cumplimiento-cmf.md)" "{\"doc\":\"estandares/cumplimiento-cmf.md\"}" || out no-probado "falta el documento de cumplimiento" "{}";;
+
   *) out no-probado "primitiva desconocida: $PRIM" "{}"; exit 2;;
 esac

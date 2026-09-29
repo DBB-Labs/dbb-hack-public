@@ -167,16 +167,19 @@ else
   for pv in B1 B2 B3 B4 B5 B6 B9 B12; do want "$pv" && np "$pv" "$pv en vivo" "BAMF" "-" "-" "Lab de $OBJ no montado — no probado."; done
 fi
 
-# ── BAMF estáticos (sobre el repo, corren con o sin lab) ──
+# ── BAMF estáticos / cobertura (sobre el repo, corren con o sin lab) ──
 want B7  && runp B7  "SSRF" "Web" "API7" "A.8.26" b7-ssrf
 want B8  && runp B8  "Path traversal / LFI" "Web" "API1" "A.8.26" b8-path-traversal
 want B10 && runp B10 "XSS (sinks de HTML crudo)" "Web" "API8" "A.8.28" b10-xss
 want B11 && runp B11 "CSRF en Server Actions" "Web" "API8" "A.8.26" b11-csrf
+want B13 && runp B13 "OWASP ASVS L2/L3" "Cobertura" "ASVS" "A.8.26" b13-asvs
+want B14 && runp B14 "OWASP WSTG" "Cobertura" "WSTG" "A.8.26" b14-wstg
+want B15 && runp B15 "DAST (escaneo dinamico)" "Dinamico" "API8" "A.8.8" b15-dast
+want B16 && runp B16 "Mapa de cumplimiento" "Cumplimiento" "—" "NCG502/21719" b16-cumplimiento
 
-# ── MID / BAMF aun planificados: se muestran, no se falsean ──
-for pv in M1 M2 B13 B14 B15 B16; do
-  want "$pv" && em ataque "$pv" planificado "$pv" "Pendiente" "—" "—" "Vector en el catalogo, aun no implementado"
-done
+# ── MID: revisión guiada por analista (manual, no automatizable sin criterio) ──
+want M1 && em ataque M1 manual "Revision de autorizacion (codigo)" "Authz" "API5" "A.8.2" "Revision guiada por playbooks de cada Server Action."
+want M2 && em ataque M2 manual "Completitud de RLS" "Supabase" "API1" "A.8.3" "Revision guiada: cada tabla con RLS y politicas por operacion (B5 ya verifica RLS activa en vivo)."
 
 em veredicto "Ataque completado: $nd defendidos, $nh hallazgos, $nv vulnerables de $((nd+nh+nv)) ejecutados."
 em estado completado

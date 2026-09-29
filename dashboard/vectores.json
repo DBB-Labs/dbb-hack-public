@@ -293,7 +293,7 @@
       "cat": "Cobertura",
       "owasp": "ASVS",
       "iso": "A.8.26",
-      "status": "planificado",
+      "status": "implementado",
       "desc": "Recorrer los 345 requisitos ASVS"
     },
     {
@@ -303,7 +303,7 @@
       "cat": "Cobertura",
       "owasp": "WSTG",
       "iso": "A.8.26",
-      "status": "planificado",
+      "status": "implementado",
       "desc": "Las 97 pruebas web como checklist"
     },
     {
@@ -313,7 +313,7 @@
       "cat": "Dinámico",
       "owasp": "API8",
       "iso": "A.8.8",
-      "status": "planificado",
+      "status": "implementado",
       "desc": "Escaneo dinámico contra la app corriendo"
     },
     {
@@ -323,7 +323,7 @@
       "cat": "Cumplimiento",
       "owasp": "—",
       "iso": "NCG502/21719",
-      "status": "planificado",
+      "status": "implementado",
       "desc": "NCG 502 E.4.1 (CMF) + Ley 21.719"
     }
   ]
