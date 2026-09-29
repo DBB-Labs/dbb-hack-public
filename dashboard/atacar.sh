@@ -161,17 +161,20 @@ if [ "$LIVE" = 1 ]; then
   want B4  && runp B4  "Mass-assignment" "Logica" "API6" "A.8.28" b4-mass-assign "$IDA"
   want B5  && runp B5  "IDOR profundo (todos los recursos)" "IDOR" "API1" "A.8.3" b5-idor-profundo
   want B6  && runp B6  "Inyeccion SQL/NoSQL" "Inyeccion" "API8" "A.8.28" b6-sqli
+  want B9  && runp B9  "Subida de archivos maliciosos" "Web" "API8" "A.8.26" b9-upload
   want B12 && runp B12 "Gestion de sesion" "Auth" "API2" "A.8.5" b12-sesion
 else
-  for pv in B1 B2 B3 B4 B5 B6 B12; do want "$pv" && np "$pv" "$pv en vivo" "BAMF" "-" "-" "Lab de $OBJ no montado — no probado."; done
+  for pv in B1 B2 B3 B4 B5 B6 B9 B12; do want "$pv" && np "$pv" "$pv en vivo" "BAMF" "-" "-" "Lab de $OBJ no montado — no probado."; done
 fi
 
 # ── BAMF estáticos (sobre el repo, corren con o sin lab) ──
+want B7  && runp B7  "SSRF" "Web" "API7" "A.8.26" b7-ssrf
+want B8  && runp B8  "Path traversal / LFI" "Web" "API1" "A.8.26" b8-path-traversal
 want B10 && runp B10 "XSS (sinks de HTML crudo)" "Web" "API8" "A.8.28" b10-xss
 want B11 && runp B11 "CSRF en Server Actions" "Web" "API8" "A.8.26" b11-csrf
 
 # ── MID / BAMF aun planificados: se muestran, no se falsean ──
-for pv in M1 M2 B7 B8 B9 B13 B14 B15 B16; do
+for pv in M1 M2 B13 B14 B15 B16; do
   want "$pv" && em ataque "$pv" planificado "$pv" "Pendiente" "—" "—" "Vector en el catalogo, aun no implementado"
 done
 

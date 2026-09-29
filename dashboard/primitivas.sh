@@ -244,5 +244,31 @@ case "$PRIM" in
     elif [ -n "$maj" ] && [ "$maj" -ge 14 ]; then out defendido "Next $maj: Server Actions same-origin por defecto, sin orígenes permitidos extra" "{\"next\":$maj}"
     else out no-probado "no se pudo confirmar la versión de Next (>=14)" "{}"; fi;;
 
+  # B7 SSRF: peligroso solo si el usuario controla el HOST. No basta que el fetch use una
+  # variable 'url' (suele armarse con host fijo + params). Se marca solo si: (a) el fetch
+  # recibe input directo, o (b) una asignación de url referencia input SIN host https fijo.
+  b7-ssrf)
+    [ -d "$REPO/src" ] || { out no-probado "sin carpeta src/" "{}"; exit 0; }
+    direct=$(grep -rnE "fetch\((req|request|params|searchParams|body|input)" "$REPO/src" 2>/dev/null | grep -vE "__tests__")
+    assign=$(grep -rnE "(const|let)[[:space:]]+url[[:space:]]*=" "$REPO/src" 2>/dev/null | grep -vE "__tests__" | grep -iE "req|params|searchParams|body|input" | grep -vE "https?://")
+    tot=$(grep -rcE "fetch\(" "$REPO/src" 2>/dev/null | grep -vE "__tests__" | awk -F: '{s+=$2} END{print s+0}')
+    bad="$direct$assign"
+    if [ -n "$bad" ]; then out hallazgo "fetch con destino derivado de input de usuario (revisar SSRF)" "{\"lineas\":$(python3 -c 'import json,sys;print(json.dumps(sys.argv[1][:200]))' "$bad")}"
+    else out defendido "los $tot fetch del server usan hosts fijos; el usuario no controla el destino" "{\"fetches\":$tot}"; fi;;
+
+  # B8 path traversal / LFI: lectura o servicio de archivos con ruta controlada por el usuario.
+  b8-path-traversal)
+    [ -d "$REPO/src" ] || { out no-probado "sin carpeta src/" "{}"; exit 0; }
+    bad=$(grep -rnE "(readFile|createReadStream|sendFile|readFileSync)\(" "$REPO/src" 2>/dev/null | grep -vE "__tests__" | grep -iE "param|req|search|body|slug|\.\.")
+    if [ -n "$bad" ]; then out hallazgo "lectura de archivos con ruta de usuario (revisar path traversal)" "{\"lineas\":$(python3 -c 'import json,sys;print(json.dumps(sys.argv[1][:200]))' "$bad")}"
+    else out defendido "sin lectura/servicio de archivos con ruta controlada por el usuario" "{}"; fi;;
+
+  # B9 subida de archivos maliciosos: los buckets deben limitar tamaño y tipo (mime).
+  b9-upload)
+    lab_vivo || { out no-probado "lab no montado — no se pudo leer la config de buckets" "{}"; exit 0; }
+    bad=$(echo "select coalesce(string_agg(id,', '),'') from storage.buckets where file_size_limit is null or allowed_mime_types is null;" | run_sql | tail -1)
+    if [ -z "$bad" ]; then out defendido "todos los buckets limitan tamaño y tipo de archivo" "{}"
+    else out hallazgo "buckets sin límite de tamaño o de tipo de archivo" "{\"buckets\":\"$bad\"}"; fi;;
+
   *) out no-probado "primitiva desconocida: $PRIM" "{}"; exit 2;;
 esac

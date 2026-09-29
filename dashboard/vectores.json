@@ -233,7 +233,7 @@
       "cat": "Web",
       "owasp": "API7",
       "iso": "A.8.26",
-      "status": "planificado",
+      "status": "implementado",
       "desc": "Forzar peticiones salientes del servidor"
     },
     {
@@ -243,7 +243,7 @@
       "cat": "Web",
       "owasp": "API1",
       "iso": "A.8.26",
-      "status": "planificado",
+      "status": "implementado",
       "desc": "Subida/descarga de archivos fuera de ruta"
     },
     {
@@ -253,7 +253,7 @@
       "cat": "Web",
       "owasp": "API8",
       "iso": "A.8.26",
-      "status": "planificado",
+      "status": "implementado",
       "desc": "Tipo/tamaño/contenido en los buckets"
     },
     {
