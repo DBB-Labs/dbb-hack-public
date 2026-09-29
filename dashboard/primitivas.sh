@@ -196,5 +196,34 @@ case "$PRIM" in
     code=$(curl -s -o /dev/null -w "%{http_code}" "$API/rest/v1/client_profile?select=id" -H "apikey: $ANON" -H "Authorization: Bearer falso.token.invalido")
     case "$code" in 401|403) out defendido "JWT inválido rechazado (HTTP $code)" "{\"code\":$code}";; 000) out no-probado "API no respondió — no probado" "{}";; *) out hallazgo "JWT inválido no fue rechazado limpio (HTTP $code)" "{\"code\":$code}";; esac;;
 
+  # B1 carrera de doble-pago: el ledger tiene UNIQUE(idempotency_key). Se ATACA posteando
+  # dos veces la misma clave; la 2a debe rebotar. Todo en rollback (no mueve plata).
+  b1-doble-pago)
+    lab_vivo || { out no-probado "lab no montado" "{}"; exit 0; }
+    K="dbbhack-dup-$(date +%s%N)"
+    r=$(printf "begin; insert into fin.ledger_transaction(kind,idempotency_key,reason) values ('adjustment','%s','prueba idempotencia dbbhack uno'); insert into fin.ledger_transaction(kind,idempotency_key,reason) values ('adjustment','%s','prueba idempotencia dbbhack dos'); rollback;" "$K" "$K" | run_sql 2>&1)
+    if echo "$r" | grep -qi 'duplicate key\|unique constraint'; then out defendido "idempotencia bloquea el doble-posteo (UNIQUE idempotency_key)" "{}"
+    elif echo "$r" | grep -qi 'ERROR'; then out no-probado "no se pudo aislar la prueba (otra guarda intervino)" "{\"detalle\":$(python3 -c 'import json,sys;print(json.dumps(sys.argv[1][:200]))' "$r")}"
+    else out vulnerable "se posteó dos veces la misma transacción (doble-pago)" "{}"; fi;;
+
+  # B2 penny-drop / montos negativos: cliente intenta crear un retiro con monto negativo.
+  # args: <id-cliente>
+  b2-monto-negativo)
+    lab_vivo || { out no-probado "lab no montado" "{}"; exit 0; }
+    ca="${1:-}"; esUUID "$ca" || { out no-probado "sin cuenta de cliente — no probado" "{}"; exit 0; }
+    r=$(printf "begin; set local role authenticated; select set_config('request.jwt.claims','{\"sub\":\"%s\",\"role\":\"authenticated\",\"aal\":\"aal1\"}',true); select fin.crear_solicitud('withdraw_clp','persona','%s'::uuid,-100000,'banco',NULL); rollback;" "$ca" "$ca" | run_sql 2>&1)
+    err=$(echo "$r" | grep -i 'ERROR' | head -1)
+    if [ -n "$err" ]; then out defendido "retiro con monto negativo rechazado" "{\"evidencia\":$(python3 -c 'import json,sys;print(json.dumps(sys.argv[1][:160]))' "$err")}"
+    else out vulnerable "se creó un retiro con monto NEGATIVO" "{\"resp\":$(python3 -c 'import json,sys;print(json.dumps(sys.argv[1][:160]))' "$r")}"; fi;;
+
+  # B3 overdraw concurrente: la guarda es CHECK(balance>=0) + FOR UPDATE. Se ATACA forzando
+  # saldo negativo en una cuenta real; si no hay cuentas con saldo sembradas → no probado.
+  b3-overdraw)
+    lab_vivo || { out no-probado "lab no montado" "{}"; exit 0; }
+    n=$(echo "select count(*) from fin.account where owner_kind<>'sistema';" | run_sql | tail -1)
+    if [ "${n:-0}" = "0" ]; then out no-probado "sin cuentas con saldo sembradas; la guarda CHECK(account_no_negativo)+FOR UPDATE existe pero no se ejecutó contra saldo real" "{}"; exit 0; fi
+    r=$(printf "begin; update fin.account set balance_total_minor=-1 where owner_kind<>'sistema'; rollback;" | run_sql 2>&1)
+    echo "$r" | grep -qi 'no_negativo\|violates check' && out defendido "sobregiro bloqueado por CHECK de saldo no-negativo" "{\"cuentas\":$n}" || out vulnerable "se pudo dejar una cuenta en saldo NEGATIVO" "{\"cuentas\":$n}";;
+
   *) out no-probado "primitiva desconocida: $PRIM" "{}"; exit 2;;
 esac

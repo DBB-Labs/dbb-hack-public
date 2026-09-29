@@ -173,7 +173,7 @@
       "cat": "Race",
       "owasp": "API6",
       "iso": "A.8.26",
-      "status": "planificado",
+      "status": "implementado",
       "desc": "Dos pagos concurrentes del mismo retiro"
     },
     {
@@ -183,7 +183,7 @@
       "cat": "Lógica",
       "owasp": "API6",
       "iso": "A.8.26",
-      "status": "planificado",
+      "status": "implementado",
       "desc": "Montos negativos/overflow en amount_minor"
     },
     {
@@ -193,7 +193,7 @@
       "cat": "Race",
       "owasp": "API6",
       "iso": "A.8.26",
-      "status": "planificado",
+      "status": "implementado",
       "desc": "Dos retiros que suman más que el saldo"
     },
     {

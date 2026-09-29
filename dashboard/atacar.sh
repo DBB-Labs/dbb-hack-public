@@ -155,16 +155,19 @@ runp(){ # ID nombre cat owasp iso primitiva [args...]
   case "$est" in no-probado) np "$id" "$nom" "$cat" "$ow" "$iso" "$ev";; *) res "$id" "$est" "$nom" "$cat" "$ow" "$iso" "$ev";; esac
 }
 if [ "$LIVE" = 1 ]; then
+  want B1  && runp B1  "Carrera de doble-pago" "Race" "API6" "A.8.26" b1-doble-pago
+  want B2  && runp B2  "Penny-drop / montos negativos" "Logica" "API6" "A.8.26" b2-monto-negativo "$IDA"
+  want B3  && runp B3  "Overdraw concurrente" "Race" "API6" "A.8.26" b3-overdraw
   want B4  && runp B4  "Mass-assignment" "Logica" "API6" "A.8.28" b4-mass-assign "$IDA"
   want B5  && runp B5  "IDOR profundo (todos los recursos)" "IDOR" "API1" "A.8.3" b5-idor-profundo
   want B6  && runp B6  "Inyeccion SQL/NoSQL" "Inyeccion" "API8" "A.8.28" b6-sqli
   want B12 && runp B12 "Gestion de sesion" "Auth" "API2" "A.8.5" b12-sesion
 else
-  for pv in B4 B5 B6 B12; do want "$pv" && np "$pv" "$pv en vivo" "BAMF" "-" "-" "Lab de $OBJ no montado — no probado."; done
+  for pv in B1 B2 B3 B4 B5 B6 B12; do want "$pv" && np "$pv" "$pv en vivo" "BAMF" "-" "-" "Lab de $OBJ no montado — no probado."; done
 fi
 
 # ── MID / BAMF aun planificados: se muestran, no se falsean ──
-for pv in M1 M2 B1 B2 B3 B7 B8 B9 B10 B11 B13 B14 B15 B16; do
+for pv in M1 M2 B7 B8 B9 B10 B11 B13 B14 B15 B16; do
   want "$pv" && em ataque "$pv" planificado "$pv" "Pendiente" "—" "—" "Vector en el catalogo, aun no implementado"
 done
 
