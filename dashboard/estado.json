@@ -1,0 +1,15 @@
+{
+  "marca": "DBB Labs",
+  "objetivo": "—",
+  "stack": "",
+  "modo": "",
+  "estado": "en_curso",
+  "kpis": {"vectores": 0, "defendidos": 0, "hallazgos": 0, "cobertura": 0},
+  "severidades": {"critica": 0, "alta": 0, "media": 0, "baja": 0},
+  "integridad": 100,
+  "veredicto": "",
+  "ataques": [],
+  "eventos": [],
+  "total": 0,
+  "inicio": null
+}
